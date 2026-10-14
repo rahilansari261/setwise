@@ -1,0 +1,6 @@
+{
+  "name": "FitNotes - Gym Workout Log",
+  "description": "Clean, fast, distraction-free gym workout tracker and fitness log inspired by FitNotes. Log exercises, sets, reps, track 1RM and PRs, use the built-in rest timer and plate calculator.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
