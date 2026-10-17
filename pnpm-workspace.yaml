@@ -1,0 +1,8 @@
+packages:
+  - apps/*
+  - packages/*
+allowBuilds:
+  esbuild: true
+catalog:
+  zod: ^4.5.4
+  varlock: 1.18.0

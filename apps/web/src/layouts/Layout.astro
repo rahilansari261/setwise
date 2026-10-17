@@ -1,0 +1,71 @@
+---
+import "../styles/global.css";
+import { APP_NAME, CONTACT_EMAIL } from "../site.config";
+
+interface Props {
+	title?: string;
+	description?: string;
+}
+
+const {
+	title = `${APP_NAME} — the gym log that keeps your data on your phone`,
+	description = "Log sets in two taps, watch your PRs climb, and keep every workout on your own phone. Free gym tracker for Android.",
+} = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const year = new Date().getFullYear();
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="color-scheme" content="dark" />
+		<meta name="theme-color" content="#0B0D10" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="canonical" href={canonical} />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:type" content="website" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+			rel="stylesheet"
+		/>
+	</head>
+	<body class="min-h-screen bg-ink text-fg antialiased">
+		<header class="mx-auto flex max-w-5xl items-center justify-between px-4 py-5 sm:px-6">
+			<a href="/" class="flex items-center gap-3" aria-label={`${APP_NAME} home`}>
+				<svg width="32" height="32" viewBox="0 0 72 72" aria-hidden="true">
+					<rect width="72" height="72" rx="18" fill="#16191F"></rect>
+					<rect x="14" y="20" width="8" height="32" rx="3" fill="#C4C9D2"></rect>
+					<rect x="26" y="16" width="8" height="40" rx="3" fill="#C4C9D2"></rect>
+					<rect x="38" y="12" width="8" height="48" rx="3" fill="#C6FF3D"></rect>
+					<rect x="50" y="34" width="10" height="4" rx="2" fill="#8A919E"></rect>
+				</svg>
+				<span class="font-display text-lg font-semibold tracking-tight">{APP_NAME}</span>
+			</a>
+			<nav class="flex items-center gap-5 text-sm text-soft">
+				<a href="/#how" class="hidden hover:text-fg sm:inline">How it works</a>
+				<a href="/privacy" class="hover:text-fg">Privacy</a>
+			</nav>
+		</header>
+
+		<slot />
+
+		<footer class="mt-24 border-t border-hair">
+			<div class="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+				<p class="label">© {year} {APP_NAME}</p>
+				<nav class="flex flex-wrap gap-x-6 gap-y-3 text-sm text-soft">
+					<a href="/privacy" class="hover:text-fg">Privacy policy</a>
+					<a href="/terms" class="hover:text-fg">Terms</a>
+					<a href="/delete-account" class="hover:text-fg">Delete account</a>
+					<a href={`mailto:${CONTACT_EMAIL}`} class="hover:text-fg">{CONTACT_EMAIL}</a>
+				</nav>
+			</div>
+		</footer>
+	</body>
+</html>

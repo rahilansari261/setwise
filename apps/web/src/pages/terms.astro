@@ -1,0 +1,64 @@
+---
+import Layout from "../layouts/Layout.astro";
+import {
+	APP_NAME,
+	CONTACT_EMAIL,
+	LEGAL_UPDATED,
+	OPERATOR,
+} from "../site.config";
+---
+
+<Layout title={`Terms of use — ${APP_NAME}`} description={`The terms for using ${APP_NAME}.`}>
+	<main class="mx-auto max-w-2xl px-4 pt-10 sm:px-6">
+		<p class="label">Last updated {LEGAL_UPDATED}</p>
+		<h1 class="mt-3 font-display text-4xl font-semibold tracking-tight">Terms of use</h1>
+		<article class="prose-legal mt-6">
+			<p>
+				These terms are an agreement between you and {OPERATOR} for using the {APP_NAME} app and this website. By
+				creating an account or using the app you accept them.
+			</p>
+
+			<h2>Train at your own risk</h2>
+			<p>
+				{APP_NAME} helps you record workouts. It does not give medical advice, and the numbers it shows — estimated
+				one-rep maxes, warm-up weights, plate loads — are estimates. Talk to a doctor before starting a new training
+				program, use a spotter for heavy lifts, and stop if something hurts.
+			</p>
+
+			<h2>Your account</h2>
+			<ul>
+				<li>You sign in with Google or Apple and are responsible for keeping that account secure.</li>
+				<li>You must be at least 13 years old.</li>
+				<li>You can delete your account at any time from Settings → Delete account.</li>
+			</ul>
+
+			<h2>Your data</h2>
+			<p>
+				Your workout data is stored on your phone and belongs to you. Because it isn't backed up on our servers,
+				uninstalling the app or losing your phone deletes it unless you exported a backup. See the{" "}
+				<a href="/privacy">privacy policy</a> for details.
+			</p>
+
+			<h2>Acceptable use</h2>
+			<p>Don't misuse the service: no attempts to break, overload or reverse engineer our sign-in servers.</p>
+
+			<h2>The app is provided as is</h2>
+			<p>
+				We work to keep {APP_NAME} reliable, but we provide it "as is" without warranties of any kind. To the extent
+				the law allows, we aren't liable for injuries, lost data or indirect damages arising from using the app.
+			</p>
+
+			<h2>Changes and termination</h2>
+			<p>
+				We may update these terms or the app. If a change matters, we'll tell you in the app before it applies. We
+				may suspend accounts that break these terms.
+			</p>
+
+			<h2>Governing law</h2>
+			<p>These terms are governed by the laws of India.</p>
+
+			<h2>Contact</h2>
+			<p><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>
+		</article>
+	</main>
+</Layout>
