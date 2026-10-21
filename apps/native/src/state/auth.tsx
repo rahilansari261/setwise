@@ -135,6 +135,26 @@ function useAuthValue() {
 		}
 	}, []);
 
+	/** Emails a 6-digit code. Creates the account on first use. */
+	const sendEmailOtp = useCallback(async (email: string) => {
+		if (!supabase) throw new AuthError("Login isn't configured yet.");
+		const { error } = await supabase.auth.signInWithOtp({
+			email: email.trim(),
+			options: { shouldCreateUser: true },
+		});
+		if (error) throw new AuthError(error.message);
+	}, []);
+
+	const verifyEmailOtp = useCallback(async (email: string, token: string) => {
+		if (!supabase) throw new AuthError("Login isn't configured yet.");
+		const { error } = await supabase.auth.verifyOtp({
+			email: email.trim(),
+			token: token.trim(),
+			type: "email",
+		});
+		if (error) throw new AuthError(error.message);
+	}, []);
+
 	const enterAsGuest = useCallback(async () => {
 		if (!secretLoginEnabled) return;
 		await setKV(GUEST_KEY, true);
@@ -178,6 +198,8 @@ function useAuthValue() {
 			appleAvailable: Platform.OS === "ios",
 			signInWithGoogle,
 			signInWithApple,
+			sendEmailOtp,
+			verifyEmailOtp,
 			enterAsGuest,
 			signOut,
 			deleteAccount,
@@ -190,6 +212,8 @@ function useAuthValue() {
 			guest,
 			signInWithGoogle,
 			signInWithApple,
+			sendEmailOtp,
+			verifyEmailOtp,
 			enterAsGuest,
 			signOut,
 			deleteAccount,

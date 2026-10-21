@@ -11,18 +11,20 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { RestBar } from "@/src/components/rest-bar";
+import { useT } from "@/src/state/i18n";
 import { colors, fonts } from "@/src/theme";
 
 const ICONS: Record<string, { icon: LucideIcon; label: string }> = {
-	index: { icon: Dumbbell, label: "Today" },
-	calendar: { icon: Calendar, label: "Calendar" },
-	exercises: { icon: BookOpen, label: "Exercises" },
-	progress: { icon: TrendingUp, label: "Progress" },
-	tools: { icon: Calculator, label: "Tools" },
+	index: { icon: Dumbbell, label: "tabs.today" },
+	calendar: { icon: Calendar, label: "tabs.calendar" },
+	exercises: { icon: BookOpen, label: "tabs.exercises" },
+	progress: { icon: TrendingUp, label: "tabs.progress" },
+	tools: { icon: Calculator, label: "tabs.tools" },
 };
 
 function TabBar({ state, navigation }: BottomTabBarProps) {
 	const insets = useSafeAreaInsets();
+	const t = useT();
 	return (
 		<View style={{ backgroundColor: colors.bg }}>
 			<RestBar />
@@ -38,7 +40,7 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
 							key={route.key}
 							accessibilityRole="tab"
 							accessibilityState={{ selected: focused }}
-							accessibilityLabel={meta.label}
+							accessibilityLabel={t(meta.label)}
 							onPress={() => {
 								const event = navigation.emit({
 									type: "tabPress",
@@ -59,7 +61,7 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
 									color,
 								}}
 							>
-								{meta.label}
+								{t(meta.label)}
 							</Text>
 						</Pressable>
 					);

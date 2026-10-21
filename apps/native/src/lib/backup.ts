@@ -5,7 +5,13 @@ import * as Sharing from "expo-sharing";
 import { distanceUnit } from "@/src/lib/calc";
 import { todayISO } from "@/src/lib/dates";
 import type { BackupFile } from "@/src/state/workout-store";
-import type { Unit, WorkoutDay } from "@/src/types";
+import type {
+	Exercise,
+	Routine,
+	RoutineBundle,
+	Unit,
+	WorkoutDay,
+} from "@/src/types";
 
 async function shareText(filename: string, content: string, mimeType: string) {
 	const file = new File(Paths.cache, filename);
@@ -23,6 +29,44 @@ export async function shareBackup(backup: BackupFile) {
 		JSON.stringify(backup, null, 2),
 		"application/json",
 	);
+}
+
+export async function shareRoutine(
+	routine: Routine,
+	customExercises: Exercise[],
+) {
+	const used = new Set(routine.days.flatMap((d) => d.exerciseIds));
+	const bundle: RoutineBundle = {
+		app: "setwise-routine",
+		version: 1,
+		routine: { ...routine, folderId: undefined },
+		exercises: customExercises.filter((e) => used.has(e.id)),
+	};
+	const safe =
+		routine.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() || "routine";
+	await shareText(
+		`setwise-routine-${safe}.json`,
+		JSON.stringify(bundle, null, 2),
+		"application/json",
+	);
+}
+
+/** Parses a routine file, throwing a readable error if it isn't one. */
+export function parseRoutineBundle(text: string): RoutineBundle {
+	let data: Partial<RoutineBundle>;
+	try {
+		data = JSON.parse(text);
+	} catch {
+		throw new Error("That file isn't a Setwise routine.");
+	}
+	if (data.app !== "setwise-routine" || !data.routine?.days?.length)
+		throw new Error("That file isn't a Setwise routine.");
+	return {
+		app: "setwise-routine",
+		version: 1,
+		routine: data.routine,
+		exercises: data.exercises ?? [],
+	};
 }
 
 const csvCell = (v: string | number) => {
@@ -45,6 +89,8 @@ export async function shareCSV(
 			`Distance (${distanceUnit(unit)})`,
 			"Time (s)",
 			"Comment",
+			"Set type",
+			"RPE",
 		],
 	];
 	for (const date of Object.keys(workouts).sort()) {
@@ -60,6 +106,8 @@ export async function shareCSV(
 					String(s.distance ?? ""),
 					String(s.timeSeconds ?? ""),
 					s.comment ?? "",
+					s.setType,
+					String(s.rpe ?? ""),
 				]);
 			}
 		}

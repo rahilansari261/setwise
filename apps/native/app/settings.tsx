@@ -1,7 +1,8 @@
 import Constants from "expo-constants";
+import * as LocalAuthentication from "expo-local-authentication";
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import { ChevronLeft } from "lucide-react-native";
+import { ChevronLeft, Crown } from "lucide-react-native";
 import { type ReactNode, useState } from "react";
 import { Alert, Pressable, View } from "react-native";
 
@@ -11,6 +12,7 @@ import {
 	Field,
 	IconButton,
 	ListRow,
+	ProBadge,
 	Row,
 	Screen,
 	Segmented,
@@ -25,6 +27,9 @@ import { pickBackupText, shareBackup, shareCSV } from "@/src/lib/backup";
 import { kgToLb, lbToKg } from "@/src/lib/calc";
 import { cancelAll, scheduleReminders } from "@/src/lib/notifications";
 import { AuthError, secretLoginEnabled, useAuth } from "@/src/state/auth";
+import { useExtras } from "@/src/state/extras";
+import { useT } from "@/src/state/i18n";
+import { usePremium, useProGate } from "@/src/state/premium";
 import { useToast } from "@/src/state/toast";
 import { useWorkouts } from "@/src/state/workout-store";
 import { colors, fonts } from "@/src/theme";
@@ -37,6 +42,10 @@ export default function SettingsScreen() {
 	const store = useWorkouts();
 	const auth = useAuth();
 	const toast = useToast();
+	const t = useT();
+	const extras = useExtras();
+	const premium = usePremium();
+	const gate = useProGate();
 	const { settings, profile } = store;
 	const [busy, setBusy] = useState<string | null>(null);
 	const site = ENV.EXPO_PUBLIC_SITE_URL ?? "https://setwise.app";
@@ -154,6 +163,7 @@ export default function SettingsScreen() {
 						run("erase", async () => {
 							await cancelAll();
 							await store.wipeLocalData();
+							await extras.wipeExtras();
 						}),
 				},
 			],
@@ -181,6 +191,7 @@ export default function SettingsScreen() {
 							}
 							await cancelAll();
 							await store.wipeLocalData();
+							await extras.wipeExtras();
 						}),
 				},
 			],
@@ -196,10 +207,28 @@ export default function SettingsScreen() {
 					label="Back"
 					onPress={() => router.back()}
 				/>
-				<T variant="title">Settings</T>
+				<T variant="title">{t("settings.title")}</T>
 			</Row>
 
-			<Section title="PROFILE">
+			<Pressable
+				accessibilityRole="button"
+				onPress={() => router.push("/paywall")}
+				style={{ marginTop: 20 }}
+			>
+				<Card active={premium.isPro}>
+					<Row gap={12}>
+						<Crown size={22} color={colors.accent} />
+						<View style={{ flex: 1 }}>
+							<T variant="heading">{t("settings.pro")}</T>
+							<T variant="small">
+								{premium.isPro ? t("settings.proOn") : t("settings.proOff")}
+							</T>
+						</View>
+					</Row>
+				</Card>
+			</Pressable>
+
+			<Section title={t("settings.profile")}>
 				<Field
 					label="Name"
 					value={profile.name}
@@ -243,7 +272,7 @@ export default function SettingsScreen() {
 				</ListRow>
 			</Section>
 
-			<Section title="TRAINING">
+			<Section title={t("settings.training")}>
 				<ListRow
 					label="Split"
 					detail={splitById(profile.split).name}
@@ -252,6 +281,16 @@ export default function SettingsScreen() {
 					<T variant="label" style={{ color: colors.accent }}>
 						ROUTINES
 					</T>
+				</ListRow>
+				<ListRow
+					label={t("settings.gym")}
+					detail={
+						extras.gyms.find((g) => g.id === settings.activeGymId)?.name ??
+						"Bar weight and plates per gym"
+					}
+					onPress={() => gate("gyms", () => router.push("/gyms"))}
+				>
+					{premium.isPro ? null : <ProBadge />}
 				</ListRow>
 				<ListRow label="Units">
 					<Segmented
@@ -298,7 +337,64 @@ export default function SettingsScreen() {
 				</ListRow>
 			</Section>
 
-			<Section title="REMINDERS">
+			<Section title={t("settings.app")} note={t("settings.themeNote")}>
+				<ListRow label={t("settings.theme")}>
+					<Segmented
+						options={[
+							{ value: "dark", label: t("settings.dark").toUpperCase() },
+							{ value: "light", label: t("settings.light").toUpperCase() },
+							{ value: "system", label: t("settings.system").toUpperCase() },
+						]}
+						value={settings.theme}
+						onChange={(theme) => store.updateSettings({ theme })}
+					/>
+				</ListRow>
+				<ListRow label={t("settings.language")}>
+					<Segmented
+						options={[
+							{ value: "system", label: "AUTO" },
+							{ value: "en", label: "EN" },
+							{ value: "hi", label: "हिं" },
+						]}
+						value={settings.language}
+						onChange={(language) => store.updateSettings({ language })}
+					/>
+				</ListRow>
+				<ListRow
+					label={t("settings.biometric")}
+					detail={t("settings.biometricNote")}
+					last
+				>
+					{premium.isPro ? null : <ProBadge />}
+					<Toggle
+						value={settings.biometricLock && premium.isPro}
+						label={t("settings.biometric")}
+						onChange={(on) =>
+							gate("biometric", async () => {
+								if (on) {
+									const ok =
+										(await LocalAuthentication.hasHardwareAsync()) &&
+										(await LocalAuthentication.isEnrolledAsync());
+									if (!ok) {
+										Alert.alert(
+											"No biometrics set up",
+											"Add a fingerprint or face in your phone's settings first.",
+										);
+										return;
+									}
+									const res = await LocalAuthentication.authenticateAsync({
+										promptMessage: "Confirm to turn on the lock",
+									});
+									if (!res.success) return;
+								}
+								store.updateSettings({ biometricLock: on });
+							})
+						}
+					/>
+				</ListRow>
+			</Section>
+
+			<Section title={t("settings.reminders")}>
 				<ListRow label="Workout reminders" last={!profile.reminder.enabled}>
 					<Toggle
 						value={profile.reminder.enabled}
@@ -372,13 +468,20 @@ export default function SettingsScreen() {
 			</Section>
 
 			<Section
-				title="YOUR DATA"
+				title={t("settings.data")}
 				note="Everything is stored only on this phone. Export a backup before switching phones."
 			>
 				<ListRow
 					label="Export backup"
 					detail="JSON — can be imported again"
-					onPress={() => run("json", () => shareBackup(store.exportBackup()))}
+					onPress={() =>
+						run("json", () =>
+							shareBackup({
+								...store.exportBackup(),
+								extras: extras.exportExtras(),
+							}),
+						)
+					}
 				>
 					<T variant="label">{busy === "json" ? "…" : "SHARE"}</T>
 				</ListRow>
@@ -401,7 +504,7 @@ export default function SettingsScreen() {
 				</ListRow>
 			</Section>
 
-			<Section title="ACCOUNT">
+			<Section title={t("settings.account")}>
 				<ListRow
 					label={
 						auth.isGuest ? "Guest mode" : (auth.user?.email ?? "Signed in")
@@ -451,7 +554,7 @@ export default function SettingsScreen() {
 				</Section>
 			) : null}
 
-			<Section title="ABOUT">
+			<Section title={t("settings.about")}>
 				<ListRow
 					label="Privacy policy"
 					onPress={() => WebBrowser.openBrowserAsync(`${site}/privacy`)}

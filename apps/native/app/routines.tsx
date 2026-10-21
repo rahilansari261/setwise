@@ -1,5 +1,13 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft, Plus, Trash, X } from "lucide-react-native";
+import {
+	ChevronLeft,
+	Download,
+	FolderPlus,
+	Plus,
+	Share2,
+	Trash,
+	X,
+} from "lucide-react-native";
 import { useState } from "react";
 import {
 	Alert,
@@ -16,13 +24,25 @@ import { ExerciseList } from "@/src/components/exercise-list";
 import {
 	Button,
 	Card,
+	Chip,
 	Field,
 	IconButton,
 	Row,
 	Screen,
+	Sheet,
 	T,
 } from "@/src/components/ui";
+import { DEFAULT_ROUTINES } from "@/src/data/routines";
+import {
+	parseRoutineBundle,
+	pickBackupText,
+	shareRoutine,
+} from "@/src/lib/backup";
 import { todayISO } from "@/src/lib/dates";
+import { FREE_ROUTINE_LIMIT } from "@/src/lib/pro";
+import { extraId, useExtras } from "@/src/state/extras";
+import { usePremium, useProGate } from "@/src/state/premium";
+import { useToast } from "@/src/state/toast";
 import { newId, useWorkouts } from "@/src/state/workout-store";
 import { colors, fonts, TAP } from "@/src/theme";
 import type { Routine, RoutineDay } from "@/src/types";
@@ -31,7 +51,50 @@ export default function Routines() {
 	const router = useRouter();
 	const { date = todayISO() } = useLocalSearchParams<{ date?: string }>();
 	const store = useWorkouts();
+	const extras = useExtras();
+	const { isPro } = usePremium();
+	const gate = useProGate();
+	const toast = useToast();
 	const [editing, setEditing] = useState<Routine | null>(null);
+	const [scope, setScope] = useState<string>("all");
+	const [foldersOpen, setFoldersOpen] = useState(false);
+	const [newFolder, setNewFolder] = useState("");
+	const [filing, setFiling] = useState<Routine | null>(null);
+
+	const builtIn = new Set(DEFAULT_ROUTINES.map((r) => r.id));
+	const customCount = store.routines.filter((r) => !builtIn.has(r.id)).length;
+	const atLimit = !isPro && customCount >= FREE_ROUTINE_LIMIT;
+	const visible = store.routines.filter(
+		(r) =>
+			scope === "all" ||
+			(scope === "none" ? !r.folderId : r.folderId === scope),
+	);
+
+	const startNew = () => {
+		if (atLimit) return gate("unlimitedRoutines", () => {});
+		setEditing({
+			id: newId("routine"),
+			name: "",
+			description: "",
+			days: [],
+		});
+	};
+
+	const importFromFile = async () => {
+		if (atLimit) return gate("unlimitedRoutines", () => {});
+		try {
+			const text = await pickBackupText();
+			if (!text) return;
+			const bundle = parseRoutineBundle(text);
+			store.importRoutine(bundle);
+			toast(`Added ${bundle.routine.name}`);
+		} catch (e) {
+			Alert.alert(
+				"Couldn't import",
+				e instanceof Error ? e.message : String(e),
+			);
+		}
+	};
 
 	return (
 		<Screen stack bottomInset={32}>
@@ -45,21 +108,52 @@ export default function Routines() {
 					Routines
 				</T>
 				<IconButton
-					icon={Plus}
-					label="New routine"
-					onPress={() =>
-						setEditing({
-							id: newId("routine"),
-							name: "",
-							description: "",
-							days: [],
-						})
-					}
+					icon={Download}
+					label="Import a routine file"
+					onPress={importFromFile}
+				/>
+				<IconButton icon={Plus} label="New routine" onPress={startNew} />
+			</Row>
+
+			{!isPro ? (
+				<T variant="small" style={{ marginTop: 10 }}>
+					{customCount}/{FREE_ROUTINE_LIMIT} custom routines on the free plan.
+				</T>
+			) : null}
+
+			<Row gap={6} style={{ marginTop: 12, flexWrap: "wrap" }}>
+				<Chip
+					label="All"
+					selected={scope === "all"}
+					onPress={() => setScope("all")}
+					style={{ minHeight: 36 }}
+				/>
+				{extras.routineFolders.map((f) => (
+					<Chip
+						key={f.id}
+						label={f.name}
+						selected={scope === f.id}
+						onPress={() => setScope(f.id)}
+						style={{ minHeight: 36 }}
+					/>
+				))}
+				{extras.routineFolders.length > 0 ? (
+					<Chip
+						label="No folder"
+						selected={scope === "none"}
+						onPress={() => setScope("none")}
+						style={{ minHeight: 36 }}
+					/>
+				) : null}
+				<Chip
+					label={isPro ? "+ Folder" : "+ Folder · PRO"}
+					onPress={() => gate("routineFolders", () => setFoldersOpen(true))}
+					style={{ minHeight: 36 }}
 				/>
 			</Row>
 
 			<View style={{ gap: 12, marginTop: 16 }}>
-				{store.routines.map((routine) => {
+				{visible.map((routine) => {
 					const active = store.activeRoutine?.routineId === routine.id;
 					return (
 						<Card key={routine.id} active={active}>
@@ -162,11 +256,111 @@ export default function Routines() {
 									style={{ flex: 1 }}
 									onPress={() => setEditing(routine)}
 								/>
+								<IconButton
+									icon={FolderPlus}
+									label={`Put ${routine.name} in a folder`}
+									onPress={() =>
+										gate("routineFolders", () => setFiling(routine))
+									}
+								/>
+								<IconButton
+									icon={Share2}
+									label={`Share ${routine.name}`}
+									onPress={() =>
+										gate("routineShare", () =>
+											shareRoutine(routine, store.customExercises).catch((e) =>
+												Alert.alert(
+													"Couldn't share",
+													e instanceof Error ? e.message : String(e),
+												),
+											),
+										)
+									}
+								/>
 							</Row>
 						</Card>
 					);
 				})}
 			</View>
+
+			<Sheet
+				visible={foldersOpen}
+				title="ROUTINE FOLDERS"
+				onClose={() => setFoldersOpen(false)}
+			>
+				<View style={{ gap: 6 }}>
+					{extras.routineFolders.map((f) => (
+						<Row key={f.id}>
+							<T style={{ flex: 1 }}>{f.name}</T>
+							<IconButton
+								icon={Trash}
+								label={`Delete folder ${f.name}`}
+								bordered={false}
+								size={18}
+								color={colors.muted}
+								onPress={() => {
+									for (const r of store.routines)
+										if (r.folderId === f.id)
+											store.saveRoutine({ ...r, folderId: undefined });
+									extras.deleteRoutineFolder(f.id);
+									if (scope === f.id) setScope("all");
+								}}
+							/>
+						</Row>
+					))}
+				</View>
+				<Field
+					style={{ marginTop: 12 }}
+					label="New folder"
+					value={newFolder}
+					onChangeText={setNewFolder}
+					placeholder="e.g. Cutting phase"
+				/>
+				<Button
+					title="Create folder"
+					style={{ marginTop: 12 }}
+					disabled={!newFolder.trim()}
+					onPress={() => {
+						extras.saveRoutineFolder({
+							id: extraId("rf"),
+							name: newFolder.trim(),
+						});
+						setNewFolder("");
+					}}
+				/>
+			</Sheet>
+			<Sheet
+				visible={filing !== null}
+				title="MOVE TO FOLDER"
+				onClose={() => setFiling(null)}
+			>
+				<Row gap={6} style={{ flexWrap: "wrap" }}>
+					<Chip
+						label="No folder"
+						selected={!filing?.folderId}
+						onPress={() => {
+							if (filing) store.saveRoutine({ ...filing, folderId: undefined });
+							setFiling(null);
+						}}
+					/>
+					{extras.routineFolders.map((f) => (
+						<Chip
+							key={f.id}
+							label={f.name}
+							selected={filing?.folderId === f.id}
+							onPress={() => {
+								if (filing) store.saveRoutine({ ...filing, folderId: f.id });
+								setFiling(null);
+							}}
+						/>
+					))}
+				</Row>
+				{extras.routineFolders.length === 0 ? (
+					<T variant="small" style={{ marginTop: 8 }}>
+						Create a folder first with “+ Folder”.
+					</T>
+				) : null}
+			</Sheet>
 
 			{editing ? (
 				<RoutineEditor

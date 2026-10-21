@@ -656,7 +656,7 @@ const styles = StyleSheet.create({
 		backgroundColor: "transparent",
 		borderWidth: 1,
 		borderStyle: "dashed",
-		borderColor: "#3A3F48",
+		borderColor: colors.lineStrong,
 	},
 	dayToggle: {
 		flex: 1,

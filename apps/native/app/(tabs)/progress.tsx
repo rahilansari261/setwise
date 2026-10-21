@@ -1,16 +1,76 @@
+import { type Href, useRouter } from "expo-router";
+import {
+	Award,
+	CalendarRange,
+	Camera,
+	HeartPulse,
+	Layers,
+	type LucideIcon,
+	Medal,
+	Ruler,
+	Target,
+} from "lucide-react-native";
 import { useMemo, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import { ExerciseProgress } from "@/src/components/exercise-progress";
-import { Chip, Screen, T } from "@/src/components/ui";
+import { Chip, ProBadge, Screen, T } from "@/src/components/ui";
 import { CATEGORY_COLOR } from "@/src/data/exercises";
 import { fmt } from "@/src/lib/calc";
 import { addDays, shortDate, todayISO } from "@/src/lib/dates";
+import type { ProFeature } from "@/src/lib/pro";
 import { setsByCategory } from "@/src/lib/stats";
+import { useT } from "@/src/state/i18n";
+import { usePremium, useProGate } from "@/src/state/premium";
 import { useWorkouts } from "@/src/state/workout-store";
 import { colors, fonts } from "@/src/theme";
 
+const TILES: {
+	href: Href;
+	label: string;
+	icon: LucideIcon;
+	feature?: ProFeature;
+}[] = [
+	{ href: "/achievements", label: "progress.achievements", icon: Award },
+	{
+		href: "/measurements",
+		label: "progress.measurements",
+		icon: Ruler,
+		feature: "measurements",
+	},
+	{
+		href: "/photos",
+		label: "progress.photos",
+		icon: Camera,
+		feature: "photos",
+	},
+	{ href: "/goals", label: "progress.goals", icon: Target, feature: "goals" },
+	{
+		href: "/strength",
+		label: "progress.strength",
+		icon: Medal,
+		feature: "strength",
+	},
+	{
+		href: "/recovery",
+		label: "progress.recovery",
+		icon: HeartPulse,
+		feature: "recovery",
+	},
+	{ href: "/zones", label: "progress.zones", icon: Layers, feature: "zones" },
+	{
+		href: "/recap",
+		label: "progress.recap",
+		icon: CalendarRange,
+		feature: "recap",
+	},
+];
+
 export default function Progress() {
+	const router = useRouter();
+	const tr = useT();
+	const { isPro } = usePremium();
+	const gate = useProGate();
 	const { workouts, personalRecords, settings } = useWorkouts();
 
 	// Exercises with history, most recently trained first.
@@ -45,8 +105,40 @@ export default function Progress() {
 		<Screen bottomInset={32}>
 			<T variant="label">PROGRESS</T>
 			<T variant="display" style={{ marginTop: 4 }}>
-				Your lifts
+				{tr("progress.title")}
 			</T>
+
+			<View style={styles.tiles}>
+				{TILES.map((t) => {
+					const Icon = t.icon;
+					return (
+						<Pressable
+							key={t.label}
+							accessibilityRole="button"
+							accessibilityLabel={tr(t.label)}
+							onPress={() =>
+								t.feature
+									? gate(t.feature, () => router.push(t.href))
+									: router.push(t.href)
+							}
+							style={({ pressed }) => [
+								styles.tile,
+								pressed && { opacity: 0.7 },
+							]}
+						>
+							<Icon size={20} color={colors.accent} />
+							<T style={styles.tileLabel} numberOfLines={1}>
+								{tr(t.label)}
+							</T>
+							{t.feature && !isPro ? (
+								<View style={{ position: "absolute", top: 8, right: 8 }}>
+									<ProBadge />
+								</View>
+							) : null}
+						</Pressable>
+					);
+				})}
+			</View>
 
 			{trained.length === 0 ? (
 				<View style={styles.empty}>
@@ -143,6 +235,19 @@ export default function Progress() {
 }
 
 const styles = StyleSheet.create({
+	tiles: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 16 },
+	tile: {
+		width: "48.5%",
+		height: 68,
+		borderRadius: 16,
+		borderWidth: 1,
+		borderColor: colors.hairline,
+		backgroundColor: colors.surface,
+		paddingHorizontal: 14,
+		justifyContent: "center",
+		gap: 6,
+	},
+	tileLabel: { fontFamily: fonts.bodyMedium, fontSize: 14 },
 	empty: {
 		marginTop: 24,
 		gap: 6,

@@ -46,8 +46,35 @@ const LB_PLATES: Plate[] = [
 	{ weight: 2.5, color: "#3A3F48" },
 ];
 
-export function calculatePlates(target: number, bar: number, unit: Unit) {
-	const plates = unit === "kg" ? KG_PLATES : LB_PLATES;
+const PLATE_COLORS = [
+	"#E5484D",
+	"#3E7BFA",
+	"#F5C542",
+	"#3DBE7A",
+	"#E8EAED",
+	"#A0A6B1",
+];
+
+/** Plates for the gym's own set of sizes (heaviest first), falling back to the standard set. */
+export function platesFor(unit: Unit, available?: number[]): Plate[] {
+	if (!available || available.length === 0)
+		return unit === "kg" ? KG_PLATES : LB_PLATES;
+	return [...new Set(available)]
+		.filter((w) => w > 0)
+		.sort((a, b) => b - a)
+		.map((weight, i) => ({
+			weight,
+			color: PLATE_COLORS[i % PLATE_COLORS.length] ?? "#A0A6B1",
+		}));
+}
+
+export function calculatePlates(
+	target: number,
+	bar: number,
+	unit: Unit,
+	available?: number[],
+) {
+	const plates = platesFor(unit, available);
 	const perSide: { plate: Plate; count: number }[] = [];
 	if (target <= bar) return { perSide, perSideWeight: 0, remainder: 0 };
 	let remaining = (target - bar) / 2;
@@ -67,6 +94,15 @@ export function calculatePlates(target: number, bar: number, unit: Unit) {
 
 export function warmupSets(working: number, bar: number, unit: Unit) {
 	const step = unit === "kg" ? 2.5 : 5;
+	// No bar (dumbbells, machines): ramp by percentage of the working weight.
+	if (bar <= 0) {
+		if (working <= 0) return [];
+		return [
+			{ label: "40%", weight: roundTo(working * 0.4, step / 2), reps: 8 },
+			{ label: "60%", weight: roundTo(working * 0.6, step / 2), reps: 5 },
+			{ label: "80%", weight: roundTo(working * 0.8, step / 2), reps: 2 },
+		];
+	}
 	if (working <= bar) return [{ label: "Empty bar", weight: bar, reps: 10 }];
 	const at = (pct: number) =>
 		Math.max(bar, roundTo(bar + (working - bar) * pct, step));

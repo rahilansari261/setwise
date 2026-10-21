@@ -1,5 +1,6 @@
 import { estimate1RM } from "@/src/lib/calc";
 import { addDays, startOfWeek } from "@/src/lib/dates";
+import { countsAsWork, setVolume } from "@/src/lib/sets";
 import type { Category, WorkoutDay } from "@/src/types";
 
 export function dayStats(day: WorkoutDay | undefined) {
@@ -13,7 +14,7 @@ export function dayStats(day: WorkoutDay | undefined) {
 			total++;
 			if (!s.completed) continue;
 			done++;
-			volume += (s.weight || 0) * (s.reps || 0);
+			volume += setVolume(s, we.dumbbellMode);
 			if (s.completedAt) {
 				first = Math.min(first, s.completedAt);
 				last = Math.max(last, s.completedAt);
@@ -78,9 +79,9 @@ export function exerciseSessions(
 		for (const we of workouts[date]?.exercises ?? []) {
 			if (we.exerciseId !== exerciseId) continue;
 			for (const s of we.sets) {
-				if (!s.completed || s.setType === "warmup") continue;
+				if (!s.completed || !countsAsWork(s)) continue;
 				sets++;
-				volume += s.weight * s.reps;
+				volume += setVolume(s, we.dumbbellMode);
 				maxWeight = Math.max(maxWeight, s.weight);
 				const est = estimate1RM(s.weight, s.reps);
 				if (est > e1rm) {
@@ -113,9 +114,7 @@ export function setsByCategory(
 	for (const [date, day] of Object.entries(workouts)) {
 		if (date < fromDate) continue;
 		for (const we of day.exercises) {
-			const n = we.sets.filter(
-				(s) => s.completed && s.setType !== "warmup",
-			).length;
+			const n = we.sets.filter((s) => s.completed && countsAsWork(s)).length;
 			if (n) counts.set(we.category, (counts.get(we.category) ?? 0) + n);
 		}
 	}

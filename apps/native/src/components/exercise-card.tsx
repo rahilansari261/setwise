@@ -4,14 +4,24 @@ import {
 	ArrowDown,
 	ArrowUp,
 	Check,
+	Dumbbell,
 	EllipsisVertical,
+	Flame,
 	History,
+	Link2,
 	StickyNote,
 	Trash,
+	Unlink2,
+	Weight,
 } from "lucide-react-native";
 import { memo, useEffect, useState } from "react";
 import { Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
 
+import {
+	DumbbellSheet,
+	PlateSheet,
+	SetSheet,
+} from "@/src/components/set-sheets";
 import { ActionSheet, T } from "@/src/components/ui";
 import { CATEGORY_COLOR } from "@/src/data/exercises";
 import {
@@ -20,7 +30,9 @@ import {
 	fmt,
 	fmtSetTime,
 	parseSetTime,
+	warmupSets,
 } from "@/src/lib/calc";
+import { countsAsWork, setTypeInfo } from "@/src/lib/sets";
 import { useRestTimerActions } from "@/src/state/rest-timer";
 import { useToast } from "@/src/state/toast";
 import {
@@ -35,13 +47,6 @@ import type {
 	WorkoutExercise,
 	WorkoutSet,
 } from "@/src/types";
-
-const SET_LABEL: Record<WorkoutSet["setType"], string | null> = {
-	normal: null,
-	warmup: "W",
-	drop: "D",
-	failure: "F",
-};
 
 interface Columns {
 	a: {
@@ -87,6 +92,11 @@ export const ExerciseCard = memo(function ExerciseCard({
 	unit,
 	autoRest,
 	vibration,
+	supersetLabel,
+	restAfterSet,
+	canLinkNext,
+	barWeight,
+	gymPlates,
 }: {
 	date: string;
 	we: WorkoutExercise;
@@ -97,6 +107,13 @@ export const ExerciseCard = memo(function ExerciseCard({
 	unit: Unit;
 	autoRest: boolean;
 	vibration: boolean;
+	/** "A", "B"… when this exercise is part of a superset. */
+	supersetLabel?: string;
+	/** False for all but the last exercise of a superset: the rest comes after the round. */
+	restAfterSet: boolean;
+	canLinkNext: boolean;
+	barWeight: number;
+	gymPlates?: number[];
 }) {
 	const router = useRouter();
 	const store = useWorkoutActions();
@@ -104,11 +121,20 @@ export const ExerciseCard = memo(function ExerciseCard({
 	const toast = useToast();
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [showNotes, setShowNotes] = useState(Boolean(we.notes));
+	const [sheetSetId, setSheetSetId] = useState<string | null>(null);
+	const [plateOpen, setPlateOpen] = useState(false);
+	const [dbOpen, setDbOpen] = useState(false);
+	const sheetSet = we.sets.find((st) => st.id === sheetSetId) ?? null;
+	const isDumbbell =
+		exercise?.equipment === "Dumbbell" || /dumbbell/i.test(we.exerciseName);
+	const workingWeight =
+		we.sets.find((st) => countsAsWork(st) && st.weight > 0)?.weight ??
+		last?.sets.find((st) => countsAsWork(st))?.weight ??
+		0;
 
 	const cols = columnsFor(exercise?.metricType ?? "weight_reps", unit);
 	const lastTop =
-		last?.sets.filter((s) => s.setType !== "warmup").at(-1) ??
-		last?.sets.at(-1);
+		last?.sets.filter((s) => countsAsWork(s)).at(-1) ?? last?.sets.at(-1);
 	const done = we.sets.filter((s) => s.completed).length;
 
 	const onToggle = (set: WorkoutSet) => {
@@ -123,7 +149,7 @@ export const ExerciseCard = memo(function ExerciseCard({
 			);
 			toast(`New PR · ${we.exerciseName}`);
 		}
-		if (autoRest) timer.start(undefined, we.exerciseName);
+		if (autoRest && restAfterSet) timer.start(undefined, we.exerciseName);
 	};
 
 	const fillFromLast = () => {
@@ -141,6 +167,32 @@ export const ExerciseCard = memo(function ExerciseCard({
 				});
 			}
 		});
+	};
+
+	const confirmDelete = (set: WorkoutSet) =>
+		Alert.alert(`Delete set ${set.setNumber}?`, undefined, [
+			{ text: "Cancel", style: "cancel" },
+			{
+				text: "Delete",
+				style: "destructive",
+				onPress: () => store.deleteSet(date, we.id, set.id),
+			},
+		]);
+
+	const addWarmups = () => {
+		if (workingWeight <= 0) {
+			toast("Enter a working weight first");
+			return;
+		}
+		const bar = we.dumbbellMode || isDumbbell ? 0 : barWeight;
+		store.insertWarmups(
+			date,
+			we.id,
+			warmupSets(workingWeight, bar, unit).map((w) => ({
+				weight: w.weight,
+				reps: w.reps,
+			})),
+		);
 	};
 
 	return (
@@ -167,7 +219,16 @@ export const ExerciseCard = memo(function ExerciseCard({
 							{lastTop && cols.a?.field === "weight"
 								? ` · LAST ${fmt(lastTop.weight)} × ${lastTop.reps}`
 								: ""}
+							{we.dumbbellMode === "pair" ? " · DB ×2" : ""}
+							{we.dumbbellMode === "total" ? " · DB TOTAL" : ""}
+							{we.dumbbellMode === "alternating" ? " · DB ALT" : ""}
 						</T>
+						{supersetLabel ? (
+							<View style={styles.ssBadge}>
+								<Link2 size={11} color={colors.accent} />
+								<T style={styles.ssText}>SUPERSET {supersetLabel}</T>
+							</View>
+						) : null}
 					</View>
 				</View>
 				<Pressable
@@ -228,17 +289,8 @@ export const ExerciseCard = memo(function ExerciseCard({
 						}
 					}}
 					onToggle={() => onToggle(set)}
-					onCycleType={() => store.cycleSetType(date, we.id, set.id)}
-					onDelete={() =>
-						Alert.alert(`Delete set ${set.setNumber}?`, undefined, [
-							{ text: "Cancel", style: "cancel" },
-							{
-								text: "Delete",
-								style: "destructive",
-								onPress: () => store.deleteSet(date, we.id, set.id),
-							},
-						])
-					}
+					onOpen={() => setSheetSetId(set.id)}
+					onDelete={() => confirmDelete(set)}
 				/>
 			))}
 
@@ -286,6 +338,47 @@ export const ExerciseCard = memo(function ExerciseCard({
 						icon: StickyNote,
 						onPress: () => setShowNotes(!showNotes),
 					},
+					...(cols.showE1RM
+						? [
+								{
+									label: "Warm-up sets",
+									icon: Flame,
+									onPress: addWarmups,
+								},
+								{
+									label: "Plate calculator",
+									icon: Weight,
+									onPress: () => setPlateOpen(true),
+								},
+							]
+						: []),
+					...(isDumbbell
+						? [
+								{
+									label: "Dumbbell logging",
+									icon: Dumbbell,
+									onPress: () => setDbOpen(true),
+								},
+							]
+						: []),
+					...(canLinkNext
+						? [
+								{
+									label: "Superset with next",
+									icon: Link2,
+									onPress: () => store.linkSuperset(date, we.id),
+								},
+							]
+						: []),
+					...(we.supersetId
+						? [
+								{
+									label: "Remove from superset",
+									icon: Unlink2,
+									onPress: () => store.unlinkSuperset(date, we.id),
+								},
+							]
+						: []),
 					...(isFirst
 						? []
 						: [
@@ -324,6 +417,35 @@ export const ExerciseCard = memo(function ExerciseCard({
 					},
 				]}
 			/>
+			<SetSheet
+				set={sheetSet}
+				onClose={() => setSheetSetId(null)}
+				onType={(t) =>
+					sheetSet && store.setSetType(date, we.id, sheetSet.id, t)
+				}
+				onRpe={(rpe) =>
+					sheetSet && store.updateSet(date, we.id, sheetSet.id, { rpe })
+				}
+				onDelete={() => {
+					const target = sheetSet;
+					setSheetSetId(null);
+					if (target) confirmDelete(target);
+				}}
+			/>
+			<PlateSheet
+				visible={plateOpen}
+				onClose={() => setPlateOpen(false)}
+				target={workingWeight}
+				bar={barWeight}
+				unit={unit}
+				plates={gymPlates}
+			/>
+			<DumbbellSheet
+				visible={dbOpen}
+				mode={we.dumbbellMode}
+				onClose={() => setDbOpen(false)}
+				onPick={(m) => store.setDumbbellMode(date, we.id, m)}
+			/>
 		</View>
 	);
 });
@@ -333,25 +455,26 @@ function SetRow({
 	cols,
 	onChange,
 	onToggle,
-	onCycleType,
+	onOpen,
 	onDelete,
 }: {
 	set: WorkoutSet;
 	cols: Columns;
 	onChange: (patch: Partial<WorkoutSet>) => void;
 	onToggle: () => void;
-	onCycleType: () => void;
+	onOpen: () => void;
 	onDelete: () => void;
 }) {
-	const typeLabel = SET_LABEL[set.setType];
-	const muted = set.setType === "warmup";
+	const info = setTypeInfo(set.setType);
+	const typeLabel = info.short || null;
+	const muted = !info.counts;
 	const e1rm = cols.showE1RM && !muted ? estimate1RM(set.weight, set.reps) : 0;
 	return (
 		<View style={[styles.grid, styles.row]}>
 			<Pressable
 				accessibilityRole="button"
-				accessibilityLabel={`Set ${set.setNumber}, ${set.setType}. Tap to change type, hold to delete.`}
-				onPress={onCycleType}
+				accessibilityLabel={`Set ${set.setNumber}, ${set.setType}. Tap to change type or effort, hold to delete.`}
+				onPress={onOpen}
 				onLongPress={onDelete}
 				style={styles.colSet}
 			>
@@ -556,7 +679,7 @@ const styles = StyleSheet.create({
 		marginTop: 8,
 		paddingBottom: 6,
 		borderBottomWidth: 1,
-		borderBottomColor: "#23272F",
+		borderBottomColor: colors.lineSoft,
 	},
 	headText: { fontSize: 10, letterSpacing: 1 },
 	row: { minHeight: 48 },
@@ -576,7 +699,7 @@ const styles = StyleSheet.create({
 		minWidth: 0,
 		borderRadius: 10,
 		borderWidth: 1.5,
-		borderColor: "#2E333C",
+		borderColor: colors.line,
 		backgroundColor: colors.bg,
 		paddingHorizontal: 8,
 		paddingVertical: 0,
@@ -587,6 +710,17 @@ const styles = StyleSheet.create({
 	},
 	doneCell: { height: 38, justifyContent: "center", paddingHorizontal: 9.5 },
 	doneText: { fontFamily: fonts.monoMedium, fontSize: 16 },
+	ssBadge: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 3,
+		marginLeft: 6,
+		paddingHorizontal: 6,
+		paddingVertical: 2,
+		borderRadius: 6,
+		backgroundColor: colors.accentTint,
+	},
+	ssText: { fontFamily: fonts.monoBold, fontSize: 9, color: colors.accent },
 	check: {
 		width: 26,
 		height: 26,
@@ -595,7 +729,7 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 	},
 	checkOn: { backgroundColor: colors.accent },
-	checkOff: { borderWidth: 2, borderColor: "#3A3F48" },
+	checkOff: { borderWidth: 2, borderColor: colors.lineStrong },
 	pr: {
 		paddingHorizontal: 4,
 		paddingVertical: 2,
@@ -621,7 +755,7 @@ const styles = StyleSheet.create({
 		height: TAP,
 		borderRadius: 12,
 		borderWidth: 1,
-		borderColor: "#2E333C",
+		borderColor: colors.line,
 		alignItems: "center",
 		justifyContent: "center",
 	},

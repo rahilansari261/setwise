@@ -13,6 +13,21 @@ function getDb(): SQLiteDatabase {
 	return db;
 }
 
+/** Synchronous read of the saved theme so colours can be chosen before the first render. */
+export function readThemePref(): "dark" | "light" | "system" {
+	try {
+		const row = getDb().getFirstSync<{ value: string }>(
+			"SELECT value FROM kv WHERE key = 'settings'",
+		);
+		const theme = row
+			? (JSON.parse(row.value) as { theme?: string }).theme
+			: null;
+		return theme === "light" || theme === "system" ? theme : "dark";
+	} catch {
+		return "dark";
+	}
+}
+
 let migration: Promise<void> | null = null;
 
 /** Safe to call from anywhere; the schema is only migrated once per launch. */

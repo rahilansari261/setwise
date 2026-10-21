@@ -14,12 +14,16 @@ import { DEFAULT_ROUTINES, splitById } from "@/src/data/routines";
 import * as db from "@/src/db/database";
 import { convertDistance, convertWeight, estimate1RM } from "@/src/lib/calc";
 import { todayISO } from "@/src/lib/dates";
+import { countsAsWork, setVolume } from "@/src/lib/sets";
 import type {
 	ActiveRoutine,
+	DumbbellMode,
 	Exercise,
+	FinishInfo,
 	PersonalRecord,
 	Profile,
 	Routine,
+	RoutineBundle,
 	SetType,
 	Settings,
 	Unit,
@@ -35,6 +39,9 @@ const DEFAULT_SETTINGS: Settings = {
 	defaultRestSeconds: 90,
 	vibrationEnabled: true,
 	restNotification: true,
+	theme: "dark",
+	language: "system",
+	biometricLock: false,
 };
 
 const KV = {
@@ -43,7 +50,6 @@ const KV = {
 	activeRoutine: "active_routine",
 } as const;
 const SAVE_DELAY_MS = 400;
-const SET_TYPE_ORDER: SetType[] = ["normal", "warmup", "drop", "failure"];
 
 export interface LastPerformance {
 	date: string;
@@ -60,6 +66,8 @@ export interface BackupFile {
 	routines: Routine[];
 	activeRoutine: ActiveRoutine | null;
 	workouts: Record<string, WorkoutDay>;
+	/** Folders, gyms, measurements, goals, favourites and plans (see extras store). */
+	extras?: unknown;
 }
 
 let idCounter = 0;
@@ -230,7 +238,7 @@ function useWorkoutStoreValue() {
 				let record = map[we.exerciseId];
 				let dayVolume = 0;
 				for (const set of we.sets) {
-					if (!set.completed || set.setType === "warmup") continue;
+					if (!set.completed || !countsAsWork(set)) continue;
 					record ??= map[we.exerciseId] = {
 						exerciseId: we.exerciseId,
 						exerciseName: we.exerciseName,
@@ -239,7 +247,7 @@ function useWorkoutStoreValue() {
 						maxEstimated1RM: { value: 0, weight: 0, reps: 0, date: day.date },
 						maxVolume: { value: 0, date: day.date },
 					};
-					dayVolume += set.weight * set.reps;
+					dayVolume += setVolume(set, we.dumbbellMode);
 					if (set.weight > record.maxWeight.value) {
 						record.maxWeight = {
 							value: set.weight,
@@ -273,7 +281,7 @@ function useWorkoutStoreValue() {
 				const exercise = exerciseById.get(exerciseId);
 				if (!exercise) continue;
 				const last = lastPerformance(exerciseId, date);
-				const working = last?.sets.filter((s) => s.setType !== "warmup") ?? [];
+				const working = last?.sets.filter((s) => countsAsWork(s)) ?? [];
 				const template = working.at(-1) ?? last?.sets.at(-1);
 				const count = Math.max(setsPerExercise, 1);
 				added.push({
@@ -352,20 +360,109 @@ function useWorkoutStoreValue() {
 		[updateExercise],
 	);
 
-	const cycleSetType = useCallback(
-		(date: string, weId: string, setId: string) =>
+	const setSetType = useCallback(
+		(date: string, weId: string, setId: string, setType: SetType) =>
 			updateExercise(date, weId, (we) => ({
 				...we,
-				sets: we.sets.map((s) => {
-					if (s.id !== setId) return s;
-					const next =
-						SET_TYPE_ORDER[
-							(SET_TYPE_ORDER.indexOf(s.setType) + 1) % SET_TYPE_ORDER.length
-						];
-					return { ...s, setType: next ?? "normal" };
-				}),
+				sets: we.sets.map((st) => (st.id === setId ? { ...st, setType } : st)),
 			})),
 		[updateExercise],
+	);
+
+	/** Joins this exercise and the next one into a superset (or extends an existing one). */
+	const linkSuperset = useCallback(
+		(date: string, weId: string) =>
+			updateDay(date, (day) => {
+				const i = day.exercises.findIndex((we) => we.id === weId);
+				const cur = day.exercises[i];
+				const next = day.exercises[i + 1];
+				if (!cur || !next) return day;
+				const id = cur.supersetId ?? newId("ss");
+				return {
+					...day,
+					exercises: day.exercises.map((we) =>
+						we.id === cur.id || we.id === next.id
+							? { ...we, supersetId: id }
+							: we,
+					),
+				};
+			}),
+		[updateDay],
+	);
+
+	const unlinkSuperset = useCallback(
+		(date: string, weId: string) =>
+			updateDay(date, (day) => {
+				const target = day.exercises.find((we) => we.id === weId);
+				if (!target?.supersetId) return day;
+				const id = target.supersetId;
+				const stripped = day.exercises.map((we) =>
+					we.id === weId ? { ...we, supersetId: undefined } : we,
+				);
+				const left = stripped.filter((we) => we.supersetId === id);
+				return {
+					...day,
+					exercises:
+						left.length > 1
+							? stripped
+							: stripped.map((we) =>
+									we.supersetId === id ? { ...we, supersetId: undefined } : we,
+								),
+				};
+			}),
+		[updateDay],
+	);
+
+	const setDumbbellMode = useCallback(
+		(date: string, weId: string, dumbbellMode: DumbbellMode) =>
+			updateExercise(date, weId, (we) => ({ ...we, dumbbellMode })),
+		[updateExercise],
+	);
+
+	/** Puts warm-up sets in front of the existing ones. */
+	const insertWarmups = useCallback(
+		(date: string, weId: string, warmups: { weight: number; reps: number }[]) =>
+			updateExercise(date, weId, (we) => ({
+				...we,
+				sets: [
+					...warmups.map((w, i) =>
+						makeSet(i + 1, {
+							weight: w.weight,
+							reps: w.reps,
+							setType: "warmup",
+						}),
+					),
+					...we.sets,
+				].map((st, i) => ({ ...st, setNumber: i + 1 })),
+			})),
+		[updateExercise],
+	);
+
+	const finishWorkout = useCallback(
+		(date: string, info: Omit<FinishInfo, "at">) =>
+			updateDay(date, (day) => ({
+				...day,
+				finished: { ...info, at: Date.now() },
+			})),
+		[updateDay],
+	);
+
+	const reopenWorkout = useCallback(
+		(date: string) =>
+			updateDay(date, (day) => ({ ...day, finished: undefined })),
+		[updateDay],
+	);
+
+	const setRestDay = useCallback(
+		(date: string, restDay: boolean) =>
+			updateDay(date, (day) => ({ ...day, restDay: restDay || undefined })),
+		[updateDay],
+	);
+
+	const setDayGym = useCallback(
+		(date: string, gymId: string | undefined) =>
+			updateDay(date, (day) => ({ ...day, gymId })),
+		[updateDay],
 	);
 
 	/** Toggles a set and reports whether it just became a personal record. */
@@ -384,12 +481,7 @@ function useWorkoutStoreValue() {
 			const completed = !set.completed;
 
 			let isPR = false;
-			if (
-				completed &&
-				set.setType !== "warmup" &&
-				set.weight > 0 &&
-				set.reps > 0
-			) {
+			if (completed && countsAsWork(set) && set.weight > 0 && set.reps > 0) {
 				// Compare against every other completed set of this exercise; a first-ever session is not a PR.
 				let bestWeight = 0;
 				let best1RM = 0;
@@ -398,8 +490,7 @@ function useWorkoutStoreValue() {
 					for (const other of day.exercises) {
 						if (other.exerciseId !== we.exerciseId) continue;
 						for (const s of other.sets) {
-							if (!s.completed || s.id === setId || s.setType === "warmup")
-								continue;
+							if (!s.completed || s.id === setId || !countsAsWork(s)) continue;
 							hasHistory = hasHistory || day.date < date;
 							bestWeight = Math.max(bestWeight, s.weight);
 							best1RM = Math.max(best1RM, estimate1RM(s.weight, s.reps));
@@ -485,6 +576,38 @@ function useWorkoutStoreValue() {
 			}
 		},
 		[routines, addExercises, updateDay, activeRoutine, setActiveRoutine],
+	);
+
+	/** Moves the active routine to its next day without logging anything. */
+	const skipRoutineDay = useCallback(() => {
+		if (!activeRoutine) return;
+		const routine = routines.find((r) => r.id === activeRoutine.routineId);
+		if (!routine || routine.days.length === 0) return;
+		setActiveRoutine({
+			routineId: routine.id,
+			nextDayIndex: (activeRoutine.nextDayIndex + 1) % routine.days.length,
+		});
+	}, [activeRoutine, routines, setActiveRoutine]);
+
+	/** Adds a routine received as a file; ids are regenerated so it never clobbers an existing one. */
+	const importRoutine = useCallback(
+		(bundle: RoutineBundle) => {
+			const known = new Set(exercises.map((e) => e.id));
+			const missing = bundle.exercises.filter((e) => !known.has(e.id));
+			if (missing.length > 0) {
+				const mine = missing.map((e) => ({ ...e, isCustom: true }));
+				setCustomExercises((prev) => [...mine, ...prev]);
+				for (const e of mine) db.saveCustomExercise(e).catch(console.error);
+			}
+			const routine: Routine = {
+				...bundle.routine,
+				id: newId("routine"),
+				folderId: undefined,
+			};
+			persistRoutines([...routines, routine]);
+			return routine;
+		},
+		[routines, exercises, persistRoutines],
 	);
 
 	// ---- exercises -----------------------------------------------------------------
@@ -650,7 +773,15 @@ function useWorkoutStoreValue() {
 		addSet,
 		updateSet,
 		deleteSet,
-		cycleSetType,
+		setSetType,
+		linkSuperset,
+		unlinkSuperset,
+		setDumbbellMode,
+		insertWarmups,
+		finishWorkout,
+		reopenWorkout,
+		setRestDay,
+		setDayGym,
 		toggleSet,
 		setExerciseNotes,
 		setDayNotes,
@@ -658,6 +789,8 @@ function useWorkoutStoreValue() {
 		deleteRoutine,
 		setActiveRoutine,
 		startRoutineDay,
+		skipRoutineDay,
+		importRoutine,
 		addCustomExercise,
 		removeCustomExercise,
 		updateSettings,
@@ -676,11 +809,15 @@ const STABLE_ACTIONS = [
 	"addSet",
 	"updateSet",
 	"deleteSet",
-	"cycleSetType",
+	"setSetType",
 	"toggleSet",
 	"removeExercise",
 	"moveExercise",
 	"setExerciseNotes",
+	"linkSuperset",
+	"unlinkSuperset",
+	"setDumbbellMode",
+	"insertWarmups",
 ] as const;
 type WorkoutActions = Pick<WorkoutStore, (typeof STABLE_ACTIONS)[number]>;
 

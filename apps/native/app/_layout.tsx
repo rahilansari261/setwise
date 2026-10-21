@@ -14,7 +14,11 @@ import {
 } from "@expo-google-fonts/space-grotesk";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
-import { DarkTheme, ThemeProvider } from "expo-router/react-navigation";
+import {
+	DarkTheme,
+	DefaultTheme,
+	ThemeProvider,
+} from "expo-router/react-navigation";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
@@ -23,19 +27,23 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { AppLock } from "@/src/components/app-lock";
 import { setupChannels } from "@/src/lib/notifications";
 import { AuthProvider, useAuth } from "@/src/state/auth";
+import { ExtrasProvider } from "@/src/state/extras";
+import { PremiumProvider } from "@/src/state/premium";
 import { RestTimerProvider } from "@/src/state/rest-timer";
 import { ToastProvider } from "@/src/state/toast";
 import { useWorkouts, WorkoutProvider } from "@/src/state/workout-store";
-import { colors } from "@/src/theme";
+import { colors, resolvedTheme } from "@/src/theme";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
+const BASE_THEME = resolvedTheme === "light" ? DefaultTheme : DarkTheme;
 const NAV_THEME = {
-	...DarkTheme,
+	...BASE_THEME,
 	colors: {
-		...DarkTheme.colors,
+		...BASE_THEME.colors,
 		background: colors.bg,
 		card: colors.bg,
 		border: colors.hairline,
@@ -89,6 +97,44 @@ function RootNavigator() {
 					name="settings"
 					options={{ animation: "slide_from_right" }}
 				/>
+				<Stack.Screen
+					name="paywall"
+					options={{ animation: "slide_from_bottom" }}
+				/>
+				<Stack.Screen
+					name="measurements"
+					options={{ animation: "slide_from_right" }}
+				/>
+				<Stack.Screen
+					name="photos"
+					options={{ animation: "slide_from_right" }}
+				/>
+				<Stack.Screen
+					name="goals"
+					options={{ animation: "slide_from_right" }}
+				/>
+				<Stack.Screen
+					name="strength"
+					options={{ animation: "slide_from_right" }}
+				/>
+				<Stack.Screen
+					name="recovery"
+					options={{ animation: "slide_from_right" }}
+				/>
+				<Stack.Screen
+					name="zones"
+					options={{ animation: "slide_from_right" }}
+				/>
+				<Stack.Screen
+					name="recap"
+					options={{ animation: "slide_from_right" }}
+				/>
+				<Stack.Screen
+					name="achievements"
+					options={{ animation: "slide_from_right" }}
+				/>
+				<Stack.Screen name="gyms" options={{ animation: "slide_from_right" }} />
+				<Stack.Screen name="help" options={{ animation: "slide_from_right" }} />
 			</Stack.Protected>
 		</Stack>
 	);
@@ -117,14 +163,20 @@ export default function RootLayout() {
 			<SafeAreaProvider>
 				<KeyboardProvider>
 					<ThemeProvider value={NAV_THEME}>
-						<StatusBar style="light" />
+						<StatusBar style={resolvedTheme === "light" ? "dark" : "light"} />
 						<AuthProvider>
 							<WorkoutProvider>
-								<RestTimerProvider>
-									<ToastProvider>
-										<RootNavigator />
-									</ToastProvider>
-								</RestTimerProvider>
+								<ExtrasProvider>
+									<PremiumProvider>
+										<RestTimerProvider>
+											<ToastProvider>
+												<AppLock>
+													<RootNavigator />
+												</AppLock>
+											</ToastProvider>
+										</RestTimerProvider>
+									</PremiumProvider>
+								</ExtrasProvider>
 							</WorkoutProvider>
 						</AuthProvider>
 					</ThemeProvider>

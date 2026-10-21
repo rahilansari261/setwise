@@ -24,7 +24,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 	orientation: "portrait",
 	icon: "./assets/images/icon.png",
 	scheme: "setwise",
-	userInterfaceStyle: "dark",
+	userInterfaceStyle: "automatic",
 	backgroundColor: BG,
 	ios: {
 		supportsTablet: false,
@@ -50,6 +50,21 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 		"expo-sqlite",
 		"expo-sharing",
 		"expo-apple-authentication",
+		"expo-localization",
+		"expo-image",
+		[
+			"expo-image-picker",
+			{
+				photosPermission:
+					"Setwise reads photos you choose for your progress timeline.",
+				cameraPermission:
+					"Setwise uses the camera for progress photos. They stay on your phone.",
+			},
+		],
+		[
+			"expo-local-authentication",
+			{ faceIDPermission: "Unlock Setwise with Face ID." },
+		],
 		// Light buttons on a dark bar, so the system nav bar doesn't glare under the dark UI.
 		["expo-navigation-bar", { style: "light", enforceContrast: false }],
 		[

@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import Svg, { Path, Rect } from "react-native-svg";
 
-import { Button, Screen, T } from "@/src/components/ui";
+import { Button, Field, Screen, T } from "@/src/components/ui";
 import { ENV } from "@/src/env";
 import { AuthError, secretLoginEnabled, useAuth } from "@/src/state/auth";
 import { colors, fonts } from "@/src/theme";
@@ -51,8 +51,12 @@ function Logo() {
 export default function SignIn() {
 	const { signInWithGoogle, signInWithApple, enterAsGuest, appleAvailable } =
 		useAuth();
-	const [busy, setBusy] = useState<"google" | "apple" | null>(null);
+	const { sendEmailOtp, verifyEmailOtp } = useAuth();
+	const [busy, setBusy] = useState<"google" | "apple" | "email" | null>(null);
 	const [error, setError] = useState<string | null>(null);
+	const [emailMode, setEmailMode] = useState<"off" | "email" | "code">("off");
+	const [email, setEmail] = useState("");
+	const [code, setCode] = useState("");
 	const taps = useRef<number[]>([]);
 
 	const onLogoPress = () => {
@@ -78,6 +82,25 @@ export default function SignIn() {
 		setBusy(provider);
 		try {
 			await (provider === "google" ? signInWithGoogle() : signInWithApple());
+		} catch (e) {
+			setError(
+				e instanceof AuthError ? e.message : "Something went wrong. Try again.",
+			);
+		} finally {
+			setBusy(null);
+		}
+	};
+
+	const emailStep = async () => {
+		setError(null);
+		setBusy("email");
+		try {
+			if (emailMode === "email") {
+				await sendEmailOtp(email);
+				setEmailMode("code");
+			} else {
+				await verifyEmailOtp(email, code);
+			}
 		} catch (e) {
 			setError(
 				e instanceof AuthError ? e.message : "Something went wrong. Try again.",
@@ -119,34 +142,91 @@ export default function SignIn() {
 						<T style={{ color: colors.danger, fontSize: 14 }}>{error}</T>
 					</View>
 				) : null}
-				<Pressable
-					accessibilityRole="button"
-					onPress={() => run("google")}
-					disabled={busy !== null}
-					style={({ pressed }) => [
-						styles.google,
-						(pressed || busy === "google") && { opacity: 0.8 },
-					]}
-				>
-					<GoogleMark />
-					<T
-						style={{
-							color: "#1F1F1F",
-							fontFamily: fonts.bodySemi,
-							fontSize: 16,
-						}}
-					>
-						{busy === "google" ? "Signing in…" : "Continue with Google"}
-					</T>
-				</Pressable>
-				{appleAvailable ? (
-					<Button
-						title={busy === "apple" ? "Signing in…" : "Continue with Apple"}
-						variant="secondary"
-						onPress={() => run("apple")}
-						disabled={busy !== null}
-					/>
-				) : null}
+				{emailMode === "off" ? (
+					<>
+						<Pressable
+							accessibilityRole="button"
+							onPress={() => run("google")}
+							disabled={busy !== null}
+							style={({ pressed }) => [
+								styles.google,
+								(pressed || busy === "google") && { opacity: 0.8 },
+							]}
+						>
+							<GoogleMark />
+							<T
+								style={{
+									color: "#1F1F1F",
+									fontFamily: fonts.bodySemi,
+									fontSize: 16,
+								}}
+							>
+								{busy === "google" ? "Signing in…" : "Continue with Google"}
+							</T>
+						</Pressable>
+						{appleAvailable ? (
+							<Button
+								title={busy === "apple" ? "Signing in…" : "Continue with Apple"}
+								variant="secondary"
+								onPress={() => run("apple")}
+								disabled={busy !== null}
+							/>
+						) : null}
+						<Button
+							title="Continue with email"
+							variant="ghost"
+							onPress={() => setEmailMode("email")}
+							disabled={busy !== null}
+						/>
+					</>
+				) : (
+					<View style={{ gap: 12 }}>
+						{emailMode === "email" ? (
+							<Field
+								label="Email"
+								value={email}
+								onChangeText={setEmail}
+								keyboardType="email-address"
+								autoCapitalize="none"
+								autoCorrect={false}
+								autoComplete="email"
+								placeholder="you@example.com"
+							/>
+						) : (
+							<Field
+								label={`6-digit code sent to ${email.trim()}`}
+								value={code}
+								onChangeText={setCode}
+								keyboardType="number-pad"
+								maxLength={8}
+								autoComplete="one-time-code"
+								placeholder="123456"
+							/>
+						)}
+						<Button
+							title={
+								emailMode === "email" ? "Send code" : "Verify and continue"
+							}
+							loading={busy === "email"}
+							disabled={
+								emailMode === "email"
+									? !email.includes("@")
+									: code.trim().length < 6
+							}
+							onPress={emailStep}
+						/>
+						<Button
+							title={emailMode === "code" ? "Use a different email" : "Back"}
+							variant="ghost"
+							compact
+							onPress={() => {
+								setError(null);
+								setCode("");
+								setEmailMode(emailMode === "code" ? "email" : "off");
+							}}
+						/>
+					</View>
+				)}
 				<T variant="small" style={{ textAlign: "center", marginTop: 4 }}>
 					By continuing you agree to the{" "}
 					<T

@@ -14,7 +14,35 @@ export type MetricType =
 	| "reps_only"
 	| "time_only";
 
-export type SetType = "normal" | "warmup" | "drop" | "failure";
+export type SetType =
+	| "normal"
+	| "warmup"
+	| "top"
+	| "backoff"
+	| "drop"
+	| "failure"
+	| "feeder"
+	| "myo"
+	| "negative"
+	| "partial"
+	| "left"
+	| "right";
+
+export type Equipment =
+	| "Barbell"
+	| "Dumbbell"
+	| "Machine"
+	| "Cable"
+	| "Bodyweight"
+	| "Kettlebell"
+	| "Band"
+	| "Other";
+
+/** How a dumbbell weight is entered, and how it counts toward volume. */
+export type DumbbellMode = "single" | "pair" | "total" | "alternating";
+
+export type ThemePref = "dark" | "light" | "system";
+export type Language = "system" | "en" | "hi";
 
 export type Unit = "kg" | "lbs";
 
@@ -25,6 +53,7 @@ export interface Exercise {
 	metricType: MetricType;
 	notes?: string;
 	isCustom?: boolean;
+	equipment?: Equipment;
 }
 
 export interface WorkoutSet {
@@ -41,6 +70,8 @@ export interface WorkoutSet {
 	setType: SetType;
 	comment?: string;
 	isPersonalRecord?: boolean;
+	/** Rate of perceived exertion, 1–10 (halves allowed). */
+	rpe?: number;
 }
 
 export interface WorkoutExercise {
@@ -50,6 +81,17 @@ export interface WorkoutExercise {
 	category: Category;
 	sets: WorkoutSet[];
 	notes?: string;
+	/** Exercises sharing a supersetId are performed back to back. */
+	supersetId?: string;
+	dumbbellMode?: DumbbellMode;
+}
+
+export interface FinishInfo {
+	at: number;
+	/** Whole-session RPE, 1–10. */
+	rpe?: number;
+	activity?: string;
+	durationMin?: number;
 }
 
 export interface WorkoutDay {
@@ -58,6 +100,72 @@ export interface WorkoutDay {
 	title?: string;
 	exercises: WorkoutExercise[];
 	notes?: string;
+	finished?: FinishInfo;
+	/** Marked as a planned rest day. */
+	restDay?: boolean;
+	gymId?: string;
+}
+
+/** A routine day pencilled in for a date; shown as missed once the date passes unlogged. */
+export interface PlannedWorkout {
+	routineId: string;
+	dayIndex: number;
+	/** Set when the user chose to skip it. */
+	skipped?: boolean;
+}
+
+export interface Gym {
+	id: string;
+	name: string;
+	barWeight: number;
+	/** Plate sizes available at this gym, in the user's unit. Empty = standard set. */
+	plates: number[];
+}
+
+export interface ExerciseFolder {
+	id: string;
+	name: string;
+	exerciseIds: string[];
+}
+
+export interface RoutineFolder {
+	id: string;
+	name: string;
+}
+
+export interface Measurement {
+	/** YYYY-MM-DD */
+	date: string;
+	weightKg?: number;
+	bodyFat?: number;
+	/** Circumferences in cm. */
+	chest?: number;
+	waist?: number;
+	hips?: number;
+	arm?: number;
+	thigh?: number;
+	neck?: number;
+}
+
+export interface ProgressPhoto {
+	id: string;
+	date: string;
+	uri: string;
+	note?: string;
+}
+
+export type TargetKind = "bodyweight" | "lift" | "weekly_workouts";
+
+export interface TargetGoal {
+	id: string;
+	kind: TargetKind;
+	title: string;
+	target: number;
+	/** Reference weight/value when the goal was created. */
+	start: number;
+	exerciseId?: string;
+	createdAt: string;
+	achievedAt?: string;
 }
 
 export interface RoutineDay {
@@ -70,6 +178,7 @@ export interface Routine {
 	name: string;
 	description: string;
 	days: RoutineDay[];
+	folderId?: string;
 }
 
 export interface Settings {
@@ -79,6 +188,10 @@ export interface Settings {
 	defaultRestSeconds: number;
 	vibrationEnabled: boolean;
 	restNotification: boolean;
+	theme: ThemePref;
+	language: Language;
+	biometricLock: boolean;
+	activeGymId?: string;
 }
 
 export type Gender = "male" | "female" | "other";
@@ -125,4 +238,12 @@ export interface PersonalRecord {
 		date: string;
 	};
 	maxVolume: { value: number; date: string };
+}
+
+/** A routine as sent to a friend: the routine plus any custom exercises it uses. */
+export interface RoutineBundle {
+	app: "setwise-routine";
+	version: 1;
+	routine: Routine;
+	exercises: Exercise[];
 }

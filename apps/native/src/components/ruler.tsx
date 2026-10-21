@@ -60,7 +60,7 @@ const Ticks = memo(function Ticks({
 
 	return (
 		<Svg width={count * TICK} height={HEIGHT}>
-			<Path d={minor} stroke="#454B56" strokeWidth={1.5} />
+			<Path d={minor} stroke={colors.lineStrong} strokeWidth={1.5} />
 			<Path d={major} stroke={colors.text} strokeWidth={1.5} />
 			{labels.map((l) => (
 				<SvgText

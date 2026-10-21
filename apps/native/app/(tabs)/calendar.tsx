@@ -14,6 +14,7 @@ import {
 	toISO,
 } from "@/src/lib/dates";
 import { dayStats, hasLogged } from "@/src/lib/stats";
+import { useExtras } from "@/src/state/extras";
 import { useWorkouts } from "@/src/state/workout-store";
 import { colors, fonts } from "@/src/theme";
 
@@ -22,6 +23,7 @@ const HEAD = ["M", "T", "W", "T", "F", "S", "S"];
 export default function CalendarScreen() {
 	const router = useRouter();
 	const { workouts, setCurrentDate, settings } = useWorkouts();
+	const { planned } = useExtras();
 	const today = todayISO();
 	const [cursor, setCursor] = useState(() => {
 		const d = new Date();
@@ -146,7 +148,42 @@ export default function CalendarScreen() {
 												]}
 											/>
 										))
-									: null}
+									: (() => {
+											const plan = planned[iso];
+											const rest = workouts[iso]?.restDay;
+											const missed = plan && !plan.skipped && iso < today;
+											if (missed)
+												return (
+													<View
+														style={[
+															styles.dot,
+															{ backgroundColor: colors.streak },
+														]}
+													/>
+												);
+											if (plan && !plan.skipped)
+												return (
+													<View
+														style={[
+															styles.dot,
+															{
+																borderWidth: 1,
+																borderColor: colors.accent,
+															},
+														]}
+													/>
+												);
+											if (rest)
+												return (
+													<View
+														style={[
+															styles.dot,
+															{ backgroundColor: colors.faint },
+														]}
+													/>
+												);
+											return null;
+										})()}
 							</View>
 						</Pressable>
 					);
@@ -155,6 +192,24 @@ export default function CalendarScreen() {
 
 			<Card style={{ marginTop: 16 }}>
 				<T variant="label">{shortDate(selected).toUpperCase()}</T>
+				{day?.restDay && stats.exercises === 0 ? (
+					<T variant="small" style={{ marginTop: 6 }}>
+						Rest day
+					</T>
+				) : null}
+				{day?.finished ? (
+					<T variant="small" style={{ marginTop: 4 }}>
+						{[
+							day.finished.activity,
+							day.finished.durationMin
+								? `${day.finished.durationMin} min`
+								: null,
+							day.finished.rpe ? `RPE ${day.finished.rpe}` : null,
+						]
+							.filter(Boolean)
+							.join(" · ")}
+					</T>
+				) : null}
 				{stats.exercises > 0 ? (
 					<>
 						<T variant="heading" style={{ marginTop: 6 }}>

@@ -1,4 +1,5 @@
-import type { LucideIcon } from "lucide-react-native";
+import { useRouter } from "expo-router";
+import { ChevronLeft, Crown, type LucideIcon } from "lucide-react-native";
 import { type ReactNode, useEffect, useRef } from "react";
 import {
 	ActivityIndicator,
@@ -103,6 +104,40 @@ export function T({
 			style={[variantStyle[variant], style]}
 			{...rest}
 		/>
+	);
+}
+
+/** Back arrow + title row used at the top of every pushed screen. */
+export function ScreenHeader({
+	title,
+	right,
+}: {
+	title: string;
+	right?: ReactNode;
+}) {
+	const router = useRouter();
+	return (
+		<Row gap={12}>
+			<IconButton
+				icon={ChevronLeft}
+				label="Back"
+				onPress={() => router.back()}
+			/>
+			<T variant="title" style={{ flex: 1 }} numberOfLines={1}>
+				{title}
+			</T>
+			{right}
+		</Row>
+	);
+}
+
+/** Small "PRO" tag for rows and tiles that need a subscription. */
+export function ProBadge({ locked = true }: { locked?: boolean }) {
+	return (
+		<View style={[styles.proBadge, !locked && { opacity: 0.55 }]}>
+			<Crown size={10} color={colors.accent} />
+			<Text style={styles.proText}>PRO</Text>
+		</View>
 	);
 }
 
@@ -629,6 +664,49 @@ export function ActionSheet({
 	);
 }
 
+/** Bottom sheet that holds arbitrary content (grids, forms, calculators). */
+export function Sheet({
+	visible,
+	title,
+	onClose,
+	children,
+}: {
+	visible: boolean;
+	title?: string;
+	onClose: () => void;
+	children: ReactNode;
+}) {
+	const insets = useSafeAreaInsets();
+	return (
+		<Modal
+			visible={visible}
+			transparent
+			animationType="fade"
+			onRequestClose={onClose}
+			statusBarTranslucent
+		>
+			<Pressable
+				style={styles.backdrop}
+				onPress={onClose}
+				accessibilityLabel="Close"
+			/>
+			<View
+				style={[
+					styles.sheet,
+					{ paddingBottom: insets.bottom + 16, paddingHorizontal: 20 },
+				]}
+			>
+				{title ? (
+					<T variant="label" style={{ paddingBottom: 12 }}>
+						{title}
+					</T>
+				) : null}
+				{children}
+			</View>
+		</Modal>
+	);
+}
+
 /** Slides in from the top, used for PR celebrations and quick confirmations. */
 export function Toast({
 	message,
@@ -788,7 +866,17 @@ const styles = StyleSheet.create({
 		gap: 12,
 		paddingVertical: 10,
 	},
-	backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)" },
+	proBadge: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 3,
+		paddingHorizontal: 6,
+		paddingVertical: 2,
+		borderRadius: 6,
+		backgroundColor: colors.accentTint,
+	},
+	proText: { fontFamily: fonts.monoBold, fontSize: 9, color: colors.accent },
+	backdrop: { flex: 1, backgroundColor: colors.overlay },
 	sheet: {
 		backgroundColor: colors.surface,
 		borderTopLeftRadius: 22,

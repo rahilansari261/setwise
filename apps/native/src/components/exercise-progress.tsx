@@ -16,6 +16,7 @@ import {
 	metricValue,
 	type ProgressMetric,
 } from "@/src/lib/stats";
+import { usePremium, useProGate } from "@/src/state/premium";
 import { useWorkouts } from "@/src/state/workout-store";
 import { colors, fonts } from "@/src/theme";
 
@@ -37,6 +38,8 @@ export function ExerciseProgress({ exerciseId }: { exerciseId: string }) {
 	const [range, setRange] = useState<(typeof RANGES)[number]["key"]>("3M");
 	const [metric, setMetric] = useState<ProgressMetric>("e1rm");
 	const unit = settings.unit;
+	const { isPro } = usePremium();
+	const gate = useProGate();
 
 	const all = useMemo(
 		() => exerciseSessions(workouts, exerciseId),
@@ -77,8 +80,15 @@ export function ExerciseProgress({ exerciseId }: { exerciseId: string }) {
 							m === "e1rm" ? "e1RM" : m === "weight" ? "Max weight" : "Volume"
 						}
 						selected={metric === m}
-						onPress={() => setMetric(m)}
-						style={{ minHeight: 36, flex: 1, paddingHorizontal: 6 }}
+						onPress={() =>
+							m === "e1rm"
+								? setMetric(m)
+								: gate("advancedCharts", () => setMetric(m))
+						}
+						style={[
+							{ minHeight: 36, flex: 1, paddingHorizontal: 6 },
+							m !== "e1rm" && !isPro && { opacity: 0.55 },
+						]}
 					/>
 				))}
 			</View>
@@ -138,8 +148,15 @@ export function ExerciseProgress({ exerciseId }: { exerciseId: string }) {
 						label={r.key}
 						mono
 						selected={range === r.key}
-						onPress={() => setRange(r.key)}
-						style={{ flex: 1, minHeight: 36 }}
+						onPress={() =>
+							r.days > 100
+								? gate("advancedCharts", () => setRange(r.key))
+								: setRange(r.key)
+						}
+						style={[
+							{ flex: 1, minHeight: 36 },
+							r.days > 100 && !isPro && { opacity: 0.55 },
+						]}
 					/>
 				))}
 			</View>
