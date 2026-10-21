@@ -544,6 +544,16 @@ export default function SettingsScreen() {
 			{secretLoginEnabled ? (
 				<Section title="DEVELOPER" note="Only in dev and preview builds.">
 					<ListRow
+						label="Unlock Pro (developer)"
+						detail="Skips billing so Pro screens can be tested"
+					>
+						<Toggle
+							value={premium.source === "dev"}
+							label="Developer Pro"
+							onChange={(on) => premium.setDevPro(on)}
+						/>
+					</ListRow>
+					<ListRow
 						label="Load 6 months of demo data"
 						detail="Push / Pull / Legs history ending yesterday"
 						onPress={loadDemoData}
@@ -555,6 +565,10 @@ export default function SettingsScreen() {
 			) : null}
 
 			<Section title={t("settings.about")}>
+				<ListRow
+					label={t("settings.help")}
+					onPress={() => router.push("/help")}
+				/>
 				<ListRow
 					label="Privacy policy"
 					onPress={() => WebBrowser.openBrowserAsync(`${site}/privacy`)}
