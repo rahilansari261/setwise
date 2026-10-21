@@ -9,6 +9,7 @@ import {
 	useState,
 } from "react";
 import { AppState } from "react-native";
+import { LIBRARY_EXERCISES } from "@/src/data/exercise-library";
 import { DEFAULT_EXERCISES } from "@/src/data/exercises";
 import { DEFAULT_ROUTINES, splitById } from "@/src/data/routines";
 import * as db from "@/src/db/database";
@@ -194,7 +195,7 @@ function useWorkoutStoreValue() {
 	// ---- derived ---------------------------------------------------------------
 
 	const exercises = useMemo(
-		() => [...customExercises, ...DEFAULT_EXERCISES],
+		() => [...customExercises, ...DEFAULT_EXERCISES, ...LIBRARY_EXERCISES],
 		[customExercises],
 	);
 	const exerciseById = useMemo(

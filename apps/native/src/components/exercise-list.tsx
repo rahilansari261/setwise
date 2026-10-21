@@ -76,7 +76,9 @@ export function ExerciseList({
 					(equipment === "All" || equipmentOf(e) === equipment) &&
 					(scope !== "favorites" || favorites.has(e.id)) &&
 					(!inFolder || inFolder.has(e.id)) &&
-					(!q || e.name.toLowerCase().includes(q)),
+					(!q ||
+						e.name.toLowerCase().includes(q) ||
+						(e.target ?? "").includes(q)),
 			)
 			.sort(
 				(a, b) =>

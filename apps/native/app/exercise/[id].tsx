@@ -2,6 +2,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, Trash } from "lucide-react-native";
 import { Alert, View } from "react-native";
 
+import { ExerciseInfo } from "@/src/components/exercise-info";
 import { ExerciseProgress } from "@/src/components/exercise-progress";
 import { IconButton, Row, Screen, T } from "@/src/components/ui";
 import { useWorkouts } from "@/src/state/workout-store";
@@ -55,6 +56,7 @@ export default function ExerciseDetail() {
 					/>
 				) : null}
 			</Row>
+			{exercise ? <ExerciseInfo exercise={exercise} /> : null}
 			<View style={{ marginTop: 16 }}>
 				<ExerciseProgress exerciseId={id} />
 			</View>

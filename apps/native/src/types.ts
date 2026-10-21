@@ -54,6 +54,12 @@ export interface Exercise {
 	notes?: string;
 	isCustom?: boolean;
 	equipment?: Equipment;
+	/** Id in the bundled exercise library (instructions, target muscles). */
+	libraryId?: string;
+	/** Main muscle worked, e.g. "pectorals". */
+	target?: string;
+	/** Supporting muscles, comma separated. */
+	secondary?: string;
 }
 
 export interface WorkoutSet {

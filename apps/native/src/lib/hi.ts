@@ -505,6 +505,7 @@ const H: Record<string, string> = {
 	"bar weight and plates per gym.": "हर जिम का बार वज़न और प्लेटें।",
 
 	"bar weight": "बार का वज़न",
+	"how to": "कैसे करें",
 	// cloud sync
 	"cloud sync": "क्लाउड सिंक",
 	"cloud sync & backup": "क्लाउड सिंक और बैकअप",
@@ -611,6 +612,8 @@ export const HI_PATTERNS: [RegExp, (...m: string[]) => string][] = [
 	[/^Reach (.+)$/, (x) => `${x} तक पहुँचें`],
 	[/^Train (\d+) days a week$/, (n) => `हफ़्ते में ${n} दिन ट्रेन करें`],
 	[/^Bar (.+) · plates (.+)$/, (b, p) => `बार ${b} · प्लेटें ${p}`],
+	[/^Target: (.+)$/, (x) => `मुख्य मसल: ${x}`],
+	[/^Also works: (.+)$/, (x) => `साथ में: ${x}`],
 	[/^Delete (.+)\?$/, (x) => `${x} हटाएँ?`],
 	[/^Remove (.+)\?$/, (x) => `${x} हटाएँ?`],
 	[/^Added (.+)$/, (x) => `${x} जुड़ गया`],
