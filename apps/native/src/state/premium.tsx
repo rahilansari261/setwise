@@ -17,6 +17,7 @@ import Purchases, {
 import * as db from "@/src/db/database";
 import { ENV } from "@/src/env";
 import type { ProFeature } from "@/src/lib/pro";
+import { useAuth } from "@/src/state/auth";
 
 const ENTITLEMENT = "pro";
 const DEV_KEY = "dev_pro";
@@ -47,6 +48,8 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
 	const [devPro, setDevProState] = useState(false);
 	const [packages, setPackages] = useState<PurchasesPackage[]>([]);
 	const [loading, setLoading] = useState(true);
+	const auth = useAuth();
+	const uid = auth.user?.id;
 
 	const apply = useCallback((info: CustomerInfo) => {
 		setStorePro(Boolean(info.entitlements.active[ENTITLEMENT]));
@@ -73,6 +76,16 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
 			cancelled = true;
 		};
 	}, [apply]);
+
+	// RevenueCat's user id is the Supabase user id, so the webhook can tell the server who is Pro.
+	useEffect(() => {
+		if (!apiKey || loading) return;
+		(async () => {
+			if (uid) apply((await Purchases.logIn(uid)).customerInfo);
+			else if (!(await Purchases.isAnonymous()))
+				apply(await Purchases.logOut());
+		})().catch((e) => console.warn("RevenueCat login failed", e));
+	}, [uid, loading, apply]);
 
 	const purchase = useCallback(
 		async (pkg: PurchasesPackage) => {

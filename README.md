@@ -1,6 +1,6 @@
 # Setwise
 
-A fast gym workout log. Workouts, body stats and settings live **only on the phone** (SQLite); Supabase is used for sign-in and nothing else.
+A fast gym workout log. Workouts, body stats and settings live on the phone (SQLite). Supabase handles sign-in and, for Pro users, optional cloud sync.
 
 Monorepo scaffolded with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack) (pnpm + Turborepo + Biome).
 
@@ -9,15 +9,31 @@ Monorepo scaffolded with [Better-T-Stack](https://github.com/AmanVarshney01/crea
 | `apps/native` | Expo (SDK 57) app — Android first, iOS later |
 | `apps/web` | Astro static marketing site: landing, `/privacy`, `/terms`, `/delete-account` |
 | `supabase/functions/delete-account` | Edge Function that deletes the caller's auth user |
+| `supabase/functions/revenuecat-webhook` | Edge Function that records Pro purchases in `public.entitlements` |
+| `supabase/migrations` | Tables and row-level security for Pro sync |
 
 ## App overview
 
 - **Auth** — Google sign-in (Apple on iOS) → Supabase `signInWithIdToken`. Setup steps are in the Supabase Auth Setup Guide doc.
 - **Secret login** — on the sign-in screen tap the logo 5 times to skip login. Enabled in dev builds and when `EXPO_PUBLIC_ENABLE_SECRET_LOGIN=true`; the `production` EAS profile turns it off.
 - **Onboarding** — name, gender, age, height, weight, units, split (PPL / Upper-Lower / Full Body / Bro / custom), experience, goal, days per week, reminder time and days.
-- **Local data** — `apps/native/src/db/database.ts`. One row per workout day plus a key/value table; JSON backup/CSV export and import in Settings.
+- **Local data** — `apps/native/src/db/database.ts`. One row per workout day plus a key/value table; JSON backup/CSV export and import in Settings. Pro can additionally sync to Supabase.
 - **Notifications** — local only (`expo-notifications`): weekly workout reminders and a "rest over" alert when the app is backgrounded.
 - **Design** — "Electric Night": tokens in `apps/native/src/theme.ts` (mirrored in `apps/web/src/styles/global.css`).
+
+## Pro, billing and cloud sync
+
+- **Free vs Pro** — every Pro feature is listed in `apps/native/src/lib/pro.ts`. Screens are gated with `<ProScreen>` / `useProGate()`.
+- **Billing** — RevenueCat (`react-native-purchases`). Set `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY`, create an entitlement called `pro`, and attach the Play products (monthly, yearly, lifetime) to the default offering. Promo codes are Google Play promo codes.
+- **Pro status on the server** — RevenueCat's app user id is the Supabase user id. Deploy the webhook so `public.entitlements` follows purchases:
+  ```bash
+  npx supabase db push                                   # runs supabase/migrations/*pro_sync.sql
+  npx supabase secrets set REVENUECAT_WEBHOOK_AUTH="<long random string>"
+  npx supabase functions deploy revenuecat-webhook --no-verify-jwt
+  ```
+  Then add the webhook in RevenueCat (URL `<project>/functions/v1/revenuecat-webhook`, Authorization header = the secret).
+- **Cloud sync (Pro)** — Settings → Your data → Cloud sync. One row per workout day plus a few collections in `public.sync_records`; row-level security only allows the owner while `is_pro()` is true. Photos stay on the phone. The merge logic is `src/lib/sync-engine.ts` (`npx tsx src/lib/sync-engine.test.ts`).
+- **Testing Pro without billing** — Settings → Developer → "Unlock Pro (developer)" (dev/preview builds). This unlocks screens only; cloud sync additionally needs a row in `public.entitlements` for your user.
 
 ## Develop
 

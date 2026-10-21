@@ -31,36 +31,36 @@ const TILES: {
 	icon: LucideIcon;
 	feature?: ProFeature;
 }[] = [
-	{ href: "/achievements", label: "progress.achievements", icon: Award },
+	{ href: "/achievements", label: "Achievements", icon: Award },
 	{
 		href: "/measurements",
-		label: "progress.measurements",
+		label: "Measurements",
 		icon: Ruler,
 		feature: "measurements",
 	},
 	{
 		href: "/photos",
-		label: "progress.photos",
+		label: "Photos",
 		icon: Camera,
 		feature: "photos",
 	},
-	{ href: "/goals", label: "progress.goals", icon: Target, feature: "goals" },
+	{ href: "/goals", label: "Goals", icon: Target, feature: "goals" },
 	{
 		href: "/strength",
-		label: "progress.strength",
+		label: "Strength rank",
 		icon: Medal,
 		feature: "strength",
 	},
 	{
 		href: "/recovery",
-		label: "progress.recovery",
+		label: "Recovery",
 		icon: HeartPulse,
 		feature: "recovery",
 	},
-	{ href: "/zones", label: "progress.zones", icon: Layers, feature: "zones" },
+	{ href: "/zones", label: "Training zones", icon: Layers, feature: "zones" },
 	{
 		href: "/recap",
-		label: "progress.recap",
+		label: "Monthly recap",
 		icon: CalendarRange,
 		feature: "recap",
 	},
@@ -105,7 +105,7 @@ export default function Progress() {
 		<Screen bottomInset={32}>
 			<T variant="label">PROGRESS</T>
 			<T variant="display" style={{ marginTop: 4 }}>
-				{tr("progress.title")}
+				{tr("Your lifts")}
 			</T>
 
 			<View style={styles.tiles}>

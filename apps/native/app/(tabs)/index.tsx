@@ -206,18 +206,18 @@ export default function Today() {
 
 			<View style={styles.stats}>
 				<Stat
-					label={t("today.volume").toUpperCase()}
+					label={t("Volume").toUpperCase()}
 					value={fmt(stats.volume, 0)}
 					unit={` ${settings.unit}`}
 				/>
 				<Stat
-					label={t("today.sets").toUpperCase()}
+					label={t("Sets").toUpperCase()}
 					value={String(stats.done)}
 					unit={`/${stats.total}`}
 					divider
 				/>
 				<Stat
-					label={t("today.time").toUpperCase()}
+					label={t("Time").toUpperCase()}
 					value={stats.durationSec ? fmtDuration(stats.durationSec) : "—"}
 					divider
 				/>
@@ -229,7 +229,7 @@ export default function Today() {
 						<Card>
 							<Row gap={10}>
 								<MoonStar size={20} color={colors.accent} />
-								<T variant="heading">{t("today.restDay")}</T>
+								<T variant="heading">{t("Rest day")}</T>
 							</Row>
 							<T variant="small" style={{ marginTop: 6 }}>
 								Recovery is where the gains happen. Sleep, eat, come back
@@ -260,20 +260,20 @@ export default function Today() {
 										</T>
 										<Row gap={8} style={{ marginTop: 12 }}>
 											<Button
-												title={t("today.doNow")}
+												title={t("Do it now")}
 												compact
 												style={{ flex: 1 }}
 												onPress={() => doPlanned(d, p)}
 											/>
 											<Button
-												title={t("today.move")}
+												title={t("Move")}
 												variant="secondary"
 												compact
 												style={{ flex: 1 }}
 												onPress={() => setMoveFrom(d)}
 											/>
 											<Button
-												title={t("today.skip")}
+												title={t("Skip")}
 												variant="secondary"
 												compact
 												style={{ flex: 1 }}
@@ -300,12 +300,12 @@ export default function Today() {
 							</T>
 							<Row gap={8} style={{ marginTop: 14 }}>
 								<Button
-									title={t("today.start")}
+									title={t("Start")}
 									style={{ flex: 1 }}
 									onPress={() => doPlanned(date, plan)}
 								/>
 								<Button
-									title={t("today.move")}
+									title={t("Move")}
 									variant="secondary"
 									style={{ flex: 1 }}
 									onPress={() => setMoveFrom(date)}
@@ -335,7 +335,7 @@ export default function Today() {
 							/>
 							<Row gap={8} style={{ marginTop: 8 }}>
 								<Button
-									title={t("today.skipDay")}
+									title={t("Skip day")}
 									icon={SkipForward}
 									variant="secondary"
 									compact
@@ -346,7 +346,7 @@ export default function Today() {
 									}}
 								/>
 								<Button
-									title={t("today.schedule")}
+									title={t("Schedule")}
 									icon={CalendarPlus}
 									variant="secondary"
 									compact
@@ -370,7 +370,7 @@ export default function Today() {
 
 					<Row gap={8}>
 						<Button
-							title={t("today.addExercise")}
+							title={t("Add exercise")}
 							icon={Plus}
 							variant="secondary"
 							compact
@@ -380,7 +380,7 @@ export default function Today() {
 							}
 						/>
 						<Button
-							title={t("today.routines")}
+							title={t("Routines")}
 							icon={ListPlus}
 							variant="secondary"
 							compact
@@ -392,7 +392,7 @@ export default function Today() {
 					</Row>
 					{!day?.restDay ? (
 						<Button
-							title={t("today.markRest")}
+							title={t("Mark as rest day")}
 							icon={MoonStar}
 							variant="ghost"
 							compact
@@ -407,7 +407,7 @@ export default function Today() {
 							<Row gap={10}>
 								<CircleCheck size={20} color={colors.accent} />
 								<View style={{ flex: 1 }}>
-									<T variant="heading">{t("today.finished")}</T>
+									<T variant="heading">{t("Workout finished")}</T>
 									<T variant="small">
 										{[
 											day.finished.activity,
@@ -464,7 +464,7 @@ export default function Today() {
 						);
 					})}
 					<Button
-						title={t("today.addExercise")}
+						title={t("Add exercise")}
 						icon={Plus}
 						variant="secondary"
 						compact
@@ -475,14 +475,14 @@ export default function Today() {
 					<TextInput
 						value={day?.notes ?? ""}
 						onChangeText={(t) => store.setDayNotes(date, t)}
-						placeholder="Workout notes — how did it feel?"
+						placeholder={t("Workout notes — how did it feel?")}
 						placeholderTextColor={colors.faint}
 						multiline
 						style={styles.notes}
 					/>
 					{!day?.finished && stats.done > 0 ? (
 						<Button
-							title={t("today.finish")}
+							title={t("Finish workout")}
 							icon={CircleCheck}
 							onPress={() => setFinishOpen(true)}
 						/>

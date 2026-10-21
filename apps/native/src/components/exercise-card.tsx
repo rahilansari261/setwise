@@ -33,6 +33,7 @@ import {
 	warmupSets,
 } from "@/src/lib/calc";
 import { countsAsWork, setTypeInfo } from "@/src/lib/sets";
+import { useT } from "@/src/state/i18n";
 import { useRestTimerActions } from "@/src/state/rest-timer";
 import { useToast } from "@/src/state/toast";
 import {
@@ -119,6 +120,7 @@ export const ExerciseCard = memo(function ExerciseCard({
 	const store = useWorkoutActions();
 	const timer = useRestTimerActions();
 	const toast = useToast();
+	const t = useT();
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [showNotes, setShowNotes] = useState(Boolean(we.notes));
 	const [sheetSetId, setSheetSetId] = useState<string | null>(null);
@@ -298,7 +300,7 @@ export const ExerciseCard = memo(function ExerciseCard({
 				<TextInput
 					value={we.notes ?? ""}
 					onChangeText={(t) => store.setExerciseNotes(date, we.id, t)}
-					placeholder="Notes for this exercise"
+					placeholder={t("Notes for this exercise")}
 					placeholderTextColor={colors.faint}
 					multiline
 					style={styles.notes}

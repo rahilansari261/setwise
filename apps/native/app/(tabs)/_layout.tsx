@@ -15,11 +15,11 @@ import { useT } from "@/src/state/i18n";
 import { colors, fonts } from "@/src/theme";
 
 const ICONS: Record<string, { icon: LucideIcon; label: string }> = {
-	index: { icon: Dumbbell, label: "tabs.today" },
-	calendar: { icon: Calendar, label: "tabs.calendar" },
-	exercises: { icon: BookOpen, label: "tabs.exercises" },
-	progress: { icon: TrendingUp, label: "tabs.progress" },
-	tools: { icon: Calculator, label: "tabs.tools" },
+	index: { icon: Dumbbell, label: "Today" },
+	calendar: { icon: Calendar, label: "Calendar" },
+	exercises: { icon: BookOpen, label: "Exercises" },
+	progress: { icon: TrendingUp, label: "Progress" },
+	tools: { icon: Calculator, label: "Tools" },
 };
 
 function TabBar({ state, navigation }: BottomTabBarProps) {

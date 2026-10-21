@@ -1,171 +1,66 @@
 import { getLocales } from "expo-localization";
-import { I18n } from "i18n-js";
+import { Alert } from "react-native";
 
+import { HI, HI_PATTERNS } from "@/src/lib/hi";
 import type { Language } from "@/src/types";
-
-const en = {
-	tabs: {
-		today: "Today",
-		calendar: "Calendar",
-		exercises: "Exercises",
-		progress: "Progress",
-		tools: "Tools",
-	},
-	common: {
-		back: "Back",
-		save: "Save",
-		cancel: "Cancel",
-		delete: "Delete",
-		edit: "Edit",
-		done: "Done",
-		close: "Close",
-		pro: "PRO",
-	},
-	today: {
-		upNext: "Up next",
-		start: "Start",
-		skipDay: "Skip day",
-		schedule: "Schedule",
-		addExercise: "Add exercise",
-		routines: "Routines",
-		restDay: "Rest day",
-		markRest: "Mark as rest day",
-		missed: "Missed",
-		planned: "Planned",
-		finish: "Finish workout",
-		finished: "Workout finished",
-		move: "Move",
-		skip: "Skip",
-		doNow: "Do it now",
-		volume: "Volume",
-		sets: "Sets",
-		time: "Time",
-	},
-	progress: {
-		title: "Your lifts",
-		achievements: "Achievements",
-		measurements: "Measurements",
-		photos: "Photos",
-		goals: "Goals",
-		strength: "Strength rank",
-		recovery: "Recovery",
-		zones: "Training zones",
-		recap: "Monthly recap",
-	},
-	settings: {
-		title: "Settings",
-		pro: "Setwise Pro",
-		proOn: "You're on Pro",
-		proOff: "Unlock analytics, folders, photos and more",
-		profile: "Profile",
-		training: "Training",
-		app: "App",
-		theme: "Theme",
-		themeNote: "Restart the app to apply a new theme.",
-		dark: "Dark",
-		light: "Light",
-		system: "System",
-		language: "Language",
-		biometric: "Biometric lock",
-		biometricNote: "Ask for fingerprint or face when the app opens",
-		gym: "Gym profiles",
-		reminders: "Reminders",
-		data: "Your data",
-		account: "Account",
-		about: "About",
-		help: "Help & support",
-	},
-	set: {
-		effort: "Effort (RPE)",
-		deleteSet: "Delete set",
-	},
-};
-
-const hi = {
-	tabs: {
-		today: "आज",
-		calendar: "कैलेंडर",
-		exercises: "एक्सरसाइज़",
-		progress: "प्रोग्रेस",
-		tools: "टूल्स",
-	},
-	common: {
-		back: "वापस",
-		save: "सेव करें",
-		cancel: "रद्द करें",
-		delete: "हटाएँ",
-		edit: "बदलें",
-		done: "हो गया",
-		close: "बंद करें",
-		pro: "PRO",
-	},
-	today: {
-		upNext: "अगला",
-		start: "शुरू करें",
-		skipDay: "आज छोड़ें",
-		schedule: "शेड्यूल करें",
-		addExercise: "एक्सरसाइज़ जोड़ें",
-		routines: "रूटीन",
-		restDay: "रेस्ट डे",
-		markRest: "रेस्ट डे बनाएँ",
-		missed: "छूटा हुआ",
-		planned: "तय किया हुआ",
-		finish: "वर्कआउट पूरा करें",
-		finished: "वर्कआउट पूरा हुआ",
-		move: "आगे बढ़ाएँ",
-		skip: "छोड़ें",
-		doNow: "अभी करें",
-		volume: "वॉल्यूम",
-		sets: "सेट",
-		time: "समय",
-	},
-	progress: {
-		title: "आपकी लिफ़्ट्स",
-		achievements: "उपलब्धियाँ",
-		measurements: "मेज़रमेंट",
-		photos: "फ़ोटो",
-		goals: "लक्ष्य",
-		strength: "स्ट्रेंथ रैंक",
-		recovery: "रिकवरी",
-		zones: "ट्रेनिंग ज़ोन",
-		recap: "मंथली रीकैप",
-	},
-	settings: {
-		title: "सेटिंग्स",
-		pro: "Setwise Pro",
-		proOn: "आप Pro पर हैं",
-		proOff: "एनालिटिक्स, फ़ोल्डर, फ़ोटो और बहुत कुछ पाएँ",
-		profile: "प्रोफ़ाइल",
-		training: "ट्रेनिंग",
-		app: "ऐप",
-		theme: "थीम",
-		themeNote: "नई थीम लागू करने के लिए ऐप दोबारा खोलें।",
-		dark: "डार्क",
-		light: "लाइट",
-		system: "सिस्टम",
-		language: "भाषा",
-		biometric: "बायोमेट्रिक लॉक",
-		biometricNote: "ऐप खुलते समय फ़िंगरप्रिंट या फ़ेस माँगें",
-		gym: "जिम प्रोफ़ाइल",
-		reminders: "रिमाइंडर",
-		data: "आपका डेटा",
-		account: "अकाउंट",
-		about: "ऐप के बारे में",
-		help: "मदद और सपोर्ट",
-	},
-	set: {
-		effort: "मेहनत (RPE)",
-		deleteSet: "सेट हटाएँ",
-	},
-};
-
-export const i18n = new I18n({ en, hi });
-i18n.defaultLocale = "en";
-i18n.enableFallback = true;
 
 export type SupportedLocale = "en" | "hi";
 
 export function resolveLocale(pref: Language): SupportedLocale {
 	if (pref === "en" || pref === "hi") return pref;
 	return getLocales()[0]?.languageCode === "hi" ? "hi" : "en";
+}
+
+let current: SupportedLocale = "en";
+export const getLocale = () => current;
+
+/**
+ * Translates a piece of UI text. The English text is the key, so anything without a Hindi entry
+ * simply shows in English. Sentences with numbers or names go through HI_PATTERNS.
+ */
+export function translate(
+	text: string,
+	locale: SupportedLocale = current,
+): string {
+	if (locale !== "hi" || !text) return text;
+	const trimmed = text.trim();
+	if (!trimmed) return text;
+	const hit = HI[trimmed.toLowerCase()];
+	if (hit) return text.replace(trimmed, hit);
+	for (const [re, fn] of HI_PATTERNS) {
+		const m = trimmed.match(re);
+		if (m) return text.replace(trimmed, fn(...m.slice(1)));
+	}
+	const unit = trimmed.match(/^(.+) \(([^()]+)\)$/);
+	if (unit?.[1] && unit[2]) {
+		const head = translate(unit[1], locale);
+		if (head !== unit[1]) return text.replace(trimmed, `${head} (${unit[2]})`);
+	}
+	if (trimmed.includes(" · ")) {
+		const parts = trimmed.split(" · ");
+		const out = parts.map((p) => translate(p, locale));
+		if (out.some((p, i) => p !== parts[i]))
+			return text.replace(trimmed, out.join(" · "));
+	}
+	return text;
+}
+
+const originalAlert = Alert.alert.bind(Alert);
+let alertPatched = false;
+
+/** Sets the app language and makes system dialogs (Alert) follow it. */
+export function setLocale(next: SupportedLocale) {
+	current = next;
+	if (alertPatched) return;
+	alertPatched = true;
+	Alert.alert = (title, message, buttons, options) =>
+		originalAlert(
+			translate(title),
+			message ? translate(message) : message,
+			buttons?.map((b) => ({
+				...b,
+				text: b.text ? translate(b.text) : b.text,
+			})),
+			options,
+		);
 }

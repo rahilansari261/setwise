@@ -118,7 +118,7 @@ function useWorkoutStoreValue() {
 		let loadedRoutines = r;
 		if (loadedRoutines.length === 0) {
 			loadedRoutines = DEFAULT_ROUTINES;
-			await db.saveRoutines(loadedRoutines);
+			await db.silentWrite(() => db.saveRoutines(loadedRoutines));
 		}
 		workoutsRef.current = w;
 		setProfile(p);
@@ -743,7 +743,7 @@ function useWorkoutStoreValue() {
 		for (const timer of pendingSaves.current.values()) clearTimeout(timer);
 		pendingSaves.current.clear();
 		await db.wipeAll();
-		await db.saveRoutines(DEFAULT_ROUTINES);
+		await db.silentWrite(() => db.saveRoutines(DEFAULT_ROUTINES));
 		workoutsRef.current = {};
 		setWorkouts({});
 		setCustomExercises([]);
@@ -755,6 +755,7 @@ function useWorkoutStoreValue() {
 
 	return {
 		ready,
+		reload: load,
 		profile,
 		settings,
 		workouts,

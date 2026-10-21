@@ -61,7 +61,7 @@ export default function Gyms() {
 									<T variant="heading">{g.name}</T>
 									<T variant="small">
 										Bar {fmt(g.barWeight)} {settings.unit} · plates{" "}
-										{g.plates.map((p) => fmt(p)).join(", ")}
+										{g.plates.map((p) => fmt(p, 2)).join(", ")}
 									</T>
 								</View>
 								<IconButton
@@ -149,7 +149,7 @@ export default function Gyms() {
 								<Chip
 									key={p}
 									mono
-									label={fmt(p)}
+									label={fmt(p, 2)}
 									selected={on}
 									onPress={() =>
 										setEditing({

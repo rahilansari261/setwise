@@ -4,3 +4,8 @@ project_id = "setwise"
 [functions.delete-account]
 # The function verifies the caller's token itself (see index.ts), which also works with the new JWT signing keys.
 verify_jwt = false
+
+[functions.revenuecat-webhook]
+enabled = true
+# RevenueCat can't send a Supabase JWT; the function checks its own shared secret instead.
+verify_jwt = false

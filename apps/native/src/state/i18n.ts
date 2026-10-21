@@ -1,15 +1,10 @@
-import { useCallback } from "react";
+import { useCallback, useContext } from "react";
 
-import { i18n, resolveLocale } from "@/src/lib/i18n";
-import { useWorkouts } from "@/src/state/workout-store";
+import { translate } from "@/src/lib/i18n";
+import { LocaleContext } from "@/src/lib/locale-context";
 
-/** `const t = useT(); t("settings.title")`. Re-renders when the language changes. */
+/** `const t = useT(); t("Add exercise")`. English text in, translated text out. */
 export function useT() {
-	const { settings } = useWorkouts();
-	const locale = resolveLocale(settings.language);
-	return useCallback(
-		(key: string, options?: Record<string, unknown>) =>
-			i18n.t(key, { locale, ...options }),
-		[locale],
-	);
+	const locale = useContext(LocaleContext);
+	return useCallback((text: string) => translate(text, locale), [locale]);
 }

@@ -21,18 +21,21 @@ import {
 } from "expo-router/react-navigation";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { type ReactNode, useEffect } from "react";
 import { StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AppLock } from "@/src/components/app-lock";
+import { resolveLocale, setLocale } from "@/src/lib/i18n";
+import { LocaleContext } from "@/src/lib/locale-context";
 import { setupChannels } from "@/src/lib/notifications";
 import { AuthProvider, useAuth } from "@/src/state/auth";
 import { ExtrasProvider } from "@/src/state/extras";
 import { PremiumProvider } from "@/src/state/premium";
 import { RestTimerProvider } from "@/src/state/rest-timer";
+import { SyncProvider } from "@/src/state/sync";
 import { ToastProvider } from "@/src/state/toast";
 import { useWorkouts, WorkoutProvider } from "@/src/state/workout-store";
 import { colors, resolvedTheme } from "@/src/theme";
@@ -52,6 +55,16 @@ const NAV_THEME = {
 		notification: colors.streak,
 	},
 };
+
+/** Keeps the module-level locale (Alerts, toasts) and the React context in step with Settings. */
+function LocaleBridge({ children }: { children: ReactNode }) {
+	const { settings } = useWorkouts();
+	const locale = resolveLocale(settings.language);
+	setLocale(locale);
+	return (
+		<LocaleContext.Provider value={locale}>{children}</LocaleContext.Provider>
+	);
+}
 
 function RootNavigator() {
 	const auth = useAuth();
@@ -167,15 +180,19 @@ export default function RootLayout() {
 						<AuthProvider>
 							<WorkoutProvider>
 								<ExtrasProvider>
-									<PremiumProvider>
-										<RestTimerProvider>
-											<ToastProvider>
-												<AppLock>
-													<RootNavigator />
-												</AppLock>
-											</ToastProvider>
-										</RestTimerProvider>
-									</PremiumProvider>
+									<LocaleBridge>
+										<PremiumProvider>
+											<SyncProvider>
+												<RestTimerProvider>
+													<ToastProvider>
+														<AppLock>
+															<RootNavigator />
+														</AppLock>
+													</ToastProvider>
+												</RestTimerProvider>
+											</SyncProvider>
+										</PremiumProvider>
+									</LocaleBridge>
 								</ExtrasProvider>
 							</WorkoutProvider>
 						</AuthProvider>

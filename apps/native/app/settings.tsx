@@ -30,6 +30,7 @@ import { AuthError, secretLoginEnabled, useAuth } from "@/src/state/auth";
 import { useExtras } from "@/src/state/extras";
 import { useT } from "@/src/state/i18n";
 import { usePremium, useProGate } from "@/src/state/premium";
+import { useSync } from "@/src/state/sync";
 import { useToast } from "@/src/state/toast";
 import { useWorkouts } from "@/src/state/workout-store";
 import { colors, fonts } from "@/src/theme";
@@ -45,6 +46,7 @@ export default function SettingsScreen() {
 	const t = useT();
 	const extras = useExtras();
 	const premium = usePremium();
+	const sync = useSync();
 	const gate = useProGate();
 	const { settings, profile } = store;
 	const [busy, setBusy] = useState<string | null>(null);
@@ -207,7 +209,7 @@ export default function SettingsScreen() {
 					label="Back"
 					onPress={() => router.back()}
 				/>
-				<T variant="title">{t("settings.title")}</T>
+				<T variant="title">{t("Settings")}</T>
 			</Row>
 
 			<Pressable
@@ -219,16 +221,18 @@ export default function SettingsScreen() {
 					<Row gap={12}>
 						<Crown size={22} color={colors.accent} />
 						<View style={{ flex: 1 }}>
-							<T variant="heading">{t("settings.pro")}</T>
+							<T variant="heading">{t("Setwise Pro")}</T>
 							<T variant="small">
-								{premium.isPro ? t("settings.proOn") : t("settings.proOff")}
+								{premium.isPro
+									? t("You're on Pro")
+									: t("Unlock analytics, folders, photos and more")}
 							</T>
 						</View>
 					</Row>
 				</Card>
 			</Pressable>
 
-			<Section title={t("settings.profile")}>
+			<Section title={t("Profile")}>
 				<Field
 					label="Name"
 					value={profile.name}
@@ -272,7 +276,7 @@ export default function SettingsScreen() {
 				</ListRow>
 			</Section>
 
-			<Section title={t("settings.training")}>
+			<Section title={t("Training")}>
 				<ListRow
 					label="Split"
 					detail={splitById(profile.split).name}
@@ -283,7 +287,7 @@ export default function SettingsScreen() {
 					</T>
 				</ListRow>
 				<ListRow
-					label={t("settings.gym")}
+					label={t("Gym profiles")}
 					detail={
 						extras.gyms.find((g) => g.id === settings.activeGymId)?.name ??
 						"Bar weight and plates per gym"
@@ -337,19 +341,22 @@ export default function SettingsScreen() {
 				</ListRow>
 			</Section>
 
-			<Section title={t("settings.app")} note={t("settings.themeNote")}>
-				<ListRow label={t("settings.theme")}>
+			<Section
+				title={t("App")}
+				note={t("Restart the app to apply a new theme.")}
+			>
+				<ListRow label={t("Theme")}>
 					<Segmented
 						options={[
-							{ value: "dark", label: t("settings.dark").toUpperCase() },
-							{ value: "light", label: t("settings.light").toUpperCase() },
-							{ value: "system", label: t("settings.system").toUpperCase() },
+							{ value: "dark", label: t("Dark").toUpperCase() },
+							{ value: "light", label: t("Light").toUpperCase() },
+							{ value: "system", label: t("System").toUpperCase() },
 						]}
 						value={settings.theme}
 						onChange={(theme) => store.updateSettings({ theme })}
 					/>
 				</ListRow>
-				<ListRow label={t("settings.language")}>
+				<ListRow label={t("Language")}>
 					<Segmented
 						options={[
 							{ value: "system", label: "AUTO" },
@@ -361,14 +368,14 @@ export default function SettingsScreen() {
 					/>
 				</ListRow>
 				<ListRow
-					label={t("settings.biometric")}
-					detail={t("settings.biometricNote")}
+					label={t("Biometric lock")}
+					detail={t("Ask for fingerprint or face when the app opens")}
 					last
 				>
 					{premium.isPro ? null : <ProBadge />}
 					<Toggle
 						value={settings.biometricLock && premium.isPro}
-						label={t("settings.biometric")}
+						label={t("Biometric lock")}
 						onChange={(on) =>
 							gate("biometric", async () => {
 								if (on) {
@@ -394,7 +401,7 @@ export default function SettingsScreen() {
 				</ListRow>
 			</Section>
 
-			<Section title={t("settings.reminders")}>
+			<Section title={t("Reminders")}>
 				<ListRow label="Workout reminders" last={!profile.reminder.enabled}>
 					<Toggle
 						value={profile.reminder.enabled}
@@ -468,9 +475,49 @@ export default function SettingsScreen() {
 			</Section>
 
 			<Section
-				title={t("settings.data")}
-				note="Everything is stored only on this phone. Export a backup before switching phones."
+				title={t("Your data")}
+				note="Everything is stored on this phone. Pro can also sync it to your account. Export a backup before switching phones."
 			>
+				<ListRow
+					label="Cloud sync"
+					detail={
+						!auth.user
+							? "Sign in with an account to sync"
+							: sync.error
+								? sync.error
+								: sync.syncing
+									? "Syncing…"
+									: sync.lastSyncAt
+										? `Last synced ${new Date(sync.lastSyncAt).toLocaleString()}`
+										: "Keep workouts in sync across phones"
+					}
+				>
+					{premium.isPro ? null : <ProBadge />}
+					<Toggle
+						value={sync.enabled && sync.available}
+						label="Cloud sync"
+						onChange={(on) =>
+							gate("cloudSync", () => {
+								if (on && !auth.user) {
+									Alert.alert(
+										"Sign in to sync",
+										"Cloud sync needs an account. Sign out of guest mode and sign in with Google or email.",
+									);
+									return;
+								}
+								sync.setEnabled(on);
+							})
+						}
+					/>
+				</ListRow>
+				{sync.enabled && sync.available ? (
+					<ListRow
+						label="Sync now"
+						onPress={() => run("sync", () => sync.syncNow())}
+					>
+						<T variant="label">{sync.syncing ? "…" : "RUN"}</T>
+					</ListRow>
+				) : null}
 				<ListRow
 					label="Export backup"
 					detail="JSON — can be imported again"
@@ -504,7 +551,7 @@ export default function SettingsScreen() {
 				</ListRow>
 			</Section>
 
-			<Section title={t("settings.account")}>
+			<Section title={t("Account")}>
 				<ListRow
 					label={
 						auth.isGuest ? "Guest mode" : (auth.user?.email ?? "Signed in")
@@ -564,9 +611,9 @@ export default function SettingsScreen() {
 				</Section>
 			) : null}
 
-			<Section title={t("settings.about")}>
+			<Section title={t("About")}>
 				<ListRow
-					label={t("settings.help")}
+					label={t("Help & support")}
 					onPress={() => router.push("/help")}
 				/>
 				<ListRow

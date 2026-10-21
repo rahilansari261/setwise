@@ -1,12 +1,14 @@
 import { useRouter } from "expo-router";
 import { ChevronLeft, Crown, type LucideIcon } from "lucide-react-native";
-import { type ReactNode, useEffect, useRef } from "react";
+import { type ReactNode, useContext, useEffect, useRef, useState } from "react";
 import {
 	ActivityIndicator,
 	Animated,
+	Keyboard,
 	Modal,
 	Pressable,
 	type PressableProps,
+	ScrollView,
 	type StyleProp,
 	StyleSheet,
 	Text,
@@ -23,7 +25,53 @@ import {
 	useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
+import { translate } from "@/src/lib/i18n";
+import { LocaleContext } from "@/src/lib/locale-context";
 import { colors, fonts, radius, TAP } from "@/src/theme";
+
+/** Translates a string label for the current language; re-renders on language change. */
+function useTr() {
+	const locale = useContext(LocaleContext);
+	return (text: string) => translate(text, locale);
+}
+
+/** Translates string children, including JSX like {"Log "}{name}{" sets"} built from several parts. */
+function translateChildren(
+	children: ReactNode,
+	tr: (s: string) => string,
+): ReactNode {
+	if (typeof children === "string") return tr(children);
+	if (Array.isArray(children)) {
+		const flat = children.flat(Number.POSITIVE_INFINITY) as ReactNode[];
+		if (flat.every((c) => typeof c === "string" || typeof c === "number")) {
+			const joined = flat.join("");
+			const out = tr(joined);
+			return out === joined ? children : out;
+		}
+		return children.map((c) => (typeof c === "string" ? tr(c) : c));
+	}
+	return children;
+}
+
+/** Height of the on-screen keyboard while `active`, else 0. */
+function useKeyboardHeight(active: boolean) {
+	const [height, setHeight] = useState(0);
+	useEffect(() => {
+		if (!active) {
+			setHeight(0);
+			return;
+		}
+		const show = Keyboard.addListener("keyboardDidShow", (e) =>
+			setHeight(e.endCoordinates.height),
+		);
+		const hide = Keyboard.addListener("keyboardDidHide", () => setHeight(0));
+		return () => {
+			show.remove();
+			hide.remove();
+		};
+	}, [active]);
+	return height;
+}
 
 // ---- text ----------------------------------------------------------------------
 
@@ -96,14 +144,18 @@ const variantStyle: Record<Variant, TextStyle> = {
 export function T({
 	variant = "body",
 	style,
+	children,
 	...rest
 }: TextProps & { variant?: Variant }) {
+	const tr = useTr();
 	return (
 		<Text
 			maxFontSizeMultiplier={1.3}
 			style={[variantStyle[variant], style]}
 			{...rest}
-		/>
+		>
+			{translateChildren(children, tr)}
+		</Text>
 	);
 }
 
@@ -244,6 +296,7 @@ export function Button({
 	style?: StyleProp<ViewStyle>;
 	compact?: boolean;
 }) {
+	const tr = useTr();
 	const palette = {
 		primary: { bg: colors.accent, fg: colors.accentInk, border: colors.accent },
 		secondary: { bg: "transparent", fg: colors.text, border: colors.border },
@@ -287,7 +340,7 @@ export function Button({
 							color: palette.fg,
 						}}
 					>
-						{title}
+						{tr(title)}
 					</Text>
 					{iconRight && iconEl}
 				</>
@@ -345,6 +398,7 @@ export function Chip({
 	style?: StyleProp<ViewStyle>;
 	mono?: boolean;
 }) {
+	const tr = useTr();
 	return (
 		<Pressable
 			accessibilityRole="button"
@@ -375,7 +429,7 @@ export function Chip({
 					color: selected ? colors.text : colors.textSoft,
 				}}
 			>
-				{label}
+				{tr(label)}
 			</Text>
 		</Pressable>
 	);
@@ -395,6 +449,7 @@ export function Segmented<T extends string>({
 	/** Stretch the segments across the full width. */
 	fill?: boolean;
 }) {
+	const tr = useTr();
 	return (
 		<View style={[styles.segmented, style]}>
 			{options.map((o) => {
@@ -419,7 +474,7 @@ export function Segmented<T extends string>({
 								color: active ? colors.text : colors.muted,
 							}}
 						>
-							{o.label}
+							{tr(o.label)}
 						</Text>
 					</Pressable>
 				);
@@ -440,6 +495,7 @@ export function Field({
 	style?: StyleProp<ViewStyle>;
 	inputStyle?: StyleProp<TextStyle>;
 }) {
+	const tr = useTr();
 	return (
 		<View style={[{ gap: 8 }, style]}>
 			{label ? <T variant="label">{label}</T> : null}
@@ -450,6 +506,7 @@ export function Field({
 				maxFontSizeMultiplier={1.2}
 				style={[styles.input, inputStyle]}
 				{...rest}
+				placeholder={rest.placeholder ? tr(rest.placeholder) : undefined}
 			/>
 		</View>
 	);
@@ -677,6 +734,7 @@ export function Sheet({
 	children: ReactNode;
 }) {
 	const insets = useSafeAreaInsets();
+	const keyboard = useKeyboardHeight(visible);
 	return (
 		<Modal
 			visible={visible}
@@ -690,10 +748,16 @@ export function Sheet({
 				onPress={onClose}
 				accessibilityLabel="Close"
 			/>
+			{/* A Modal sits outside the activity's keyboard resizing, so lift the sheet by hand. */}
 			<View
 				style={[
 					styles.sheet,
-					{ paddingBottom: insets.bottom + 16, paddingHorizontal: 20 },
+					{
+						paddingBottom: (keyboard > 0 ? 0 : insets.bottom) + 16,
+						paddingHorizontal: 20,
+						marginBottom: keyboard,
+						maxHeight: "92%",
+					},
 				]}
 			>
 				{title ? (
@@ -701,7 +765,13 @@ export function Sheet({
 						{title}
 					</T>
 				) : null}
-				{children}
+				<ScrollView
+					keyboardShouldPersistTaps="handled"
+					showsVerticalScrollIndicator={false}
+					bounces={false}
+				>
+					{children}
+				</ScrollView>
 			</View>
 		</Modal>
 	);

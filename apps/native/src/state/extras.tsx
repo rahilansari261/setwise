@@ -62,8 +62,8 @@ function useExtrasValue() {
 	const [data, setData] = useState<ExtrasData>(EMPTY);
 	const ref = useRef<ExtrasData>(EMPTY);
 
-	useEffect(() => {
-		(async () => {
+	const reload = useCallback(async () => {
+		{
 			const entries = await Promise.all(
 				(Object.keys(KEYS) as (keyof ExtrasData)[]).map(
 					async (k) => [k, await db.getKV(KEYS[k])] as const,
@@ -73,8 +73,12 @@ function useExtrasValue() {
 			for (const [k, v] of entries) if (v) next[k] = v;
 			ref.current = next as unknown as ExtrasData;
 			setData(ref.current);
-		})().catch(console.error);
+		}
 	}, []);
+
+	useEffect(() => {
+		reload().catch(console.error);
+	}, [reload]);
 
 	const commit = useCallback(
 		<K extends keyof ExtrasData>(key: K, value: ExtrasData[K]) => {
@@ -203,6 +207,7 @@ function useExtrasValue() {
 				commit("planned", next);
 			},
 
+			reloadExtras: reload,
 			exportExtras: (): ExtrasData => ref.current,
 			importExtras: async (raw: Partial<ExtrasData> | undefined) => {
 				const next = { ...EMPTY, ...(raw ?? {}) };
@@ -219,7 +224,7 @@ function useExtrasValue() {
 				setData(EMPTY);
 			},
 		}),
-		[commit],
+		[commit, reload],
 	);
 
 	return { ...data, ...actions };

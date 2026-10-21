@@ -1,5 +1,9 @@
 /** Every feature that needs Setwise Pro. The paywall lists these, `useProGate` checks them. */
 export const PRO_FEATURES = {
+	cloudSync: {
+		title: "Cloud sync & backup",
+		blurb: "Your workouts stay in sync across phones and survive a lost one.",
+	},
 	routineFolders: {
 		title: "Routine folders",
 		blurb: "Organise routines into folders.",

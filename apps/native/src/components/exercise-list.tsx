@@ -23,6 +23,7 @@ import {
 import { CATEGORIES, CATEGORY_COLOR } from "@/src/data/exercises";
 import { EQUIPMENT, equipmentOf } from "@/src/lib/sets";
 import { extraId, useExtras } from "@/src/state/extras";
+import { useT } from "@/src/state/i18n";
 import { usePremium, useProGate } from "@/src/state/premium";
 import { useWorkouts } from "@/src/state/workout-store";
 import { colors, fonts } from "@/src/theme";
@@ -48,6 +49,7 @@ export function ExerciseList({
 }) {
 	const { exercises } = useWorkouts();
 	const extras = useExtras();
+	const t = useT();
 	const { isPro } = usePremium();
 	const gate = useProGate();
 	const [query, setQuery] = useState("");
@@ -104,7 +106,7 @@ export function ExerciseList({
 							<TextInput
 								value={query}
 								onChangeText={setQuery}
-								placeholder="Search exercises"
+								placeholder={t("Search exercises")}
 								placeholderTextColor={colors.faint}
 								selectionColor={colors.accent}
 								style={styles.searchInput}
