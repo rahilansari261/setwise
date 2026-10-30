@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Dumbbell, ArrowRight } from 'lucide-react';
 import { useWorkout } from '../context/WorkoutContext';
-import { formatDateISO, parseDateISO, formatDisplayDate } from '../utils/calc';
+import { formatDateISO, parseDateISO, formatDisplayDate, formatSetSummary } from '../utils/calc';
 import { CATEGORY_COLORS } from '../data/defaultExercises';
 
 export const CalendarView: React.FC = () => {
-  const { workouts, currentDate, setCurrentDate, setActiveTab, settings } = useWorkout();
+  const { workouts, exercises, currentDate, setCurrentDate, setActiveTab, settings } = useWorkout();
 
   // Selected date inside calendar view
   const [viewDate, setViewDate] = useState<Date>(() => parseDateISO(currentDate));
@@ -204,6 +204,7 @@ export const CalendarView: React.FC = () => {
             <div className="divide-y divide-slate-800">
               {selectedWorkout.exercises.map((we) => {
                 const completedSets = we.sets.filter((s) => s.completed);
+                const metricType = exercises.find((e) => e.id === we.exerciseId)?.metricType ?? 'weight_reps';
                 const catColor = CATEGORY_COLORS[we.category] || CATEGORY_COLORS.Other;
 
                 return (
@@ -221,7 +222,7 @@ export const CalendarView: React.FC = () => {
                           {completedSets.length > 0 ? (
                             <span>
                               {completedSets.length} sets completed (
-                              {completedSets.map((s) => `${s.weight}×${s.reps}`).join(', ')})
+                              {completedSets.map((s) => formatSetSummary(s, metricType, settings.unit)).join(', ')})
                             </span>
                           ) : (
                             <span>{we.sets.length} sets planned</span>

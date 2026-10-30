@@ -2,6 +2,8 @@
  * FitNotes calculation utilities
  */
 
+import type { MetricType } from '../types/workout';
+
 // Epley 1RM Formula: Weight * (1 + Reps / 30)
 export function calculate1RM(weight: number, reps: number): number {
   if (weight <= 0 || reps <= 0) return 0;
@@ -191,4 +193,53 @@ export function convertWeight(weight: number, from: 'lbs' | 'kg', to: 'lbs' | 'k
     return Math.round(weight * 0.45359237 * 2) / 2; // round to nearest 0.5kg
   }
   return Math.round(weight * 2.20462262); // round to nearest lb
+}
+
+// Distance unit follows the weight unit: imperial (lbs) logs miles, metric (kg) logs kilometers
+export function getDistanceUnit(unit: 'lbs' | 'kg'): 'mi' | 'km' {
+  return unit === 'lbs' ? 'mi' : 'km';
+}
+
+// Convert distance between miles (lbs setting) and kilometers (kg setting)
+export function convertDistance(distance: number, from: 'lbs' | 'kg', to: 'lbs' | 'kg'): number {
+  if (from === to || !distance) return distance;
+  const converted = from === 'lbs' ? distance * 1.609344 : distance / 1.609344;
+  return Math.round(converted * 100) / 100;
+}
+
+// Format seconds as m:ss, or h:mm:ss for an hour or longer
+export function formatDuration(totalSeconds: number): string {
+  const safe = Math.max(0, Math.floor(totalSeconds || 0));
+  const h = Math.floor(safe / 3600);
+  const m = Math.floor((safe % 3600) / 60);
+  const s = String(safe % 60).padStart(2, '0');
+  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${s}`;
+  return `${m}:${s}`;
+}
+
+// Parse "90", "1:30" or "1:02:03" into seconds. Returns null for invalid input.
+export function parseDuration(input: string): number | null {
+  const trimmed = input.trim();
+  if (trimmed === '') return 0;
+  const parts = trimmed.split(':');
+  if (parts.length > 3 || parts.some((p) => !/^\d+$/.test(p))) return null;
+  return parts.reduce((total, part) => total * 60 + parseInt(part, 10), 0);
+}
+
+// Human readable summary of a set for its exercise's tracking metric
+export function formatSetSummary(
+  set: { weight: number; reps: number; distance?: number; timeSeconds?: number },
+  metricType: MetricType,
+  unit: 'lbs' | 'kg'
+): string {
+  switch (metricType) {
+    case 'reps_only':
+      return `${set.reps} reps`;
+    case 'time_only':
+      return formatDuration(set.timeSeconds || 0);
+    case 'distance_time':
+      return `${set.distance || 0} ${getDistanceUnit(unit)} in ${formatDuration(set.timeSeconds || 0)}`;
+    default:
+      return `${set.weight} ${unit} × ${set.reps}`;
+  }
 }

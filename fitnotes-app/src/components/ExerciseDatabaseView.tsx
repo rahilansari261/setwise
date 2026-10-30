@@ -14,7 +14,7 @@ import {
 import { useWorkout } from '../context/WorkoutContext';
 import { Exercise, Category } from '../types/workout';
 import { CATEGORY_COLORS } from '../data/defaultExercises';
-import { calculate1RM, formatDisplayDate } from '../utils/calc';
+import { calculate1RM, formatDisplayDate, formatSetSummary } from '../utils/calc';
 
 interface ExerciseDatabaseViewProps {
   onSelectForWorkout?: (exerciseId: string) => void;
@@ -79,7 +79,14 @@ export const ExerciseDatabaseView: React.FC<ExerciseDatabaseViewProps> = ({
 
     const historyItems: {
       date: string;
-      sets: { weight: number; reps: number; completed: boolean; est1RM: number }[];
+      sets: {
+        weight: number;
+        reps: number;
+        distance?: number;
+        timeSeconds?: number;
+        completed: boolean;
+        est1RM: number;
+      }[];
       maxWeight: number;
       best1RM: number;
       totalVolume: number;
@@ -106,6 +113,8 @@ export const ExerciseDatabaseView: React.FC<ExerciseDatabaseViewProps> = ({
           return {
             weight: s.weight,
             reps: s.reps,
+            distance: s.distance,
+            timeSeconds: s.timeSeconds,
             completed: s.completed,
             est1RM,
           };
@@ -371,9 +380,11 @@ export const ExerciseDatabaseView: React.FC<ExerciseDatabaseViewProps> = ({
                             <span className="text-xs font-bold text-slate-200">
                               {formatDisplayDate(session.date)}
                             </span>
-                            <span className="text-[11px] font-tabular text-emerald-400 font-medium">
-                              Vol: {session.totalVolume.toLocaleString()} {settings.unit}
-                            </span>
+                            {activeExercise.metricType === 'weight_reps' && (
+                              <span className="text-[11px] font-tabular text-emerald-400 font-medium">
+                                Vol: {session.totalVolume.toLocaleString()} {settings.unit}
+                              </span>
+                            )}
                           </div>
                           <div className="flex flex-wrap gap-1.5">
                             {session.sets.map((set, setIdx) => (
@@ -385,7 +396,7 @@ export const ExerciseDatabaseView: React.FC<ExerciseDatabaseViewProps> = ({
                                     : 'bg-slate-900/50 text-slate-400 border-slate-800'
                                 }`}
                               >
-                                {set.weight} {settings.unit} × {set.reps}
+                                {formatSetSummary(set, activeExercise.metricType, settings.unit)}
                               </span>
                             ))}
                           </div>

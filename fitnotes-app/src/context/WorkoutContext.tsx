@@ -18,6 +18,7 @@ import {
   playRestTimerBeep,
   triggerHaptic,
   convertWeight,
+  convertDistance,
 } from '../utils/calc';
 
 interface RestTimerState {
@@ -371,12 +372,16 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
       // Check if this exercise was performed in past workouts to prepopulate first set
       let defaultWeight = 0;
       let defaultReps = 10;
+      let defaultDistance: number | undefined;
+      let defaultTimeSeconds: number | undefined;
       for (const day of Object.values(workouts)) {
         const found = day.exercises.find((we) => we.exerciseId === exerciseId);
         if (found && found.sets.length > 0) {
           const lastSet = found.sets[found.sets.length - 1];
           defaultWeight = lastSet.weight;
           defaultReps = lastSet.reps;
+          defaultDistance = lastSet.distance;
+          defaultTimeSeconds = lastSet.timeSeconds;
           break;
         }
       }
@@ -392,6 +397,8 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
             setNumber: 1,
             weight: defaultWeight,
             reps: defaultReps,
+            distance: defaultDistance,
+            timeSeconds: defaultTimeSeconds,
             completed: false,
             setType: 'normal',
           },
@@ -432,6 +439,8 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
               setNumber: nextSetNumber,
               weight: templateSet?.weight ?? lastSet?.weight ?? 0,
               reps: templateSet?.reps ?? lastSet?.reps ?? 10,
+              distance: templateSet?.distance ?? lastSet?.distance,
+              timeSeconds: templateSet?.timeSeconds ?? lastSet?.timeSeconds,
               completed: false,
               setType: templateSet?.setType ?? 'normal',
             };
@@ -619,11 +628,15 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
         // Try to get previous weight & reps
         let lastWeight = 0;
         let lastReps = 10;
+        let lastDistance: number | undefined;
+        let lastTimeSeconds: number | undefined;
         for (const day of Object.values(workouts)) {
           const found = day.exercises.find((we) => we.exerciseId === exId);
           if (found && found.sets.length > 0) {
             lastWeight = found.sets[0].weight;
             lastReps = found.sets[0].reps;
+            lastDistance = found.sets[0].distance;
+            lastTimeSeconds = found.sets[0].timeSeconds;
             break;
           }
         }
@@ -639,6 +652,8 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
               setNumber: 1,
               weight: lastWeight,
               reps: lastReps,
+              distance: lastDistance,
+              timeSeconds: lastTimeSeconds,
               completed: false,
               setType: 'normal',
             },
@@ -647,6 +662,8 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
               setNumber: 2,
               weight: lastWeight,
               reps: lastReps,
+              distance: lastDistance,
+              timeSeconds: lastTimeSeconds,
               completed: false,
               setType: 'normal',
             },
@@ -655,6 +672,8 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
               setNumber: 3,
               weight: lastWeight,
               reps: lastReps,
+              distance: lastDistance,
+              timeSeconds: lastTimeSeconds,
               completed: false,
               setType: 'normal',
             },
@@ -678,7 +697,7 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const oldUnit = settings.unit;
         const newUnit = updates.unit;
 
-        // Convert existing workouts weight values
+        // Convert existing workouts weight and distance values
         setWorkouts((prevWorkouts) => {
           const converted: Record<string, WorkoutDay> = {};
           Object.entries(prevWorkouts).forEach(([date, day]) => {
@@ -689,6 +708,7 @@ export const WorkoutProvider: React.FC<{ children: React.ReactNode }> = ({ child
                 sets: we.sets.map((s) => ({
                   ...s,
                   weight: convertWeight(s.weight, oldUnit, newUnit),
+                  distance: s.distance === undefined ? undefined : convertDistance(s.distance, oldUnit, newUnit),
                 })),
               })),
             };

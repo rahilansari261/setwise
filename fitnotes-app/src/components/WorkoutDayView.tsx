@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -17,14 +17,90 @@ import {
   ArrowDown,
 } from 'lucide-react';
 import { useWorkout } from '../context/WorkoutContext';
-import { WorkoutExercise, WorkoutSet, SetType } from '../types/workout';
+import { WorkoutExercise, WorkoutSet, SetType, MetricType } from '../types/workout';
 import {
   addDays,
   formatDisplayDate,
   calculate1RM,
   formatDateISO,
+  formatDuration,
+  parseDuration,
+  getDistanceUnit,
 } from '../utils/calc';
 import { CATEGORY_COLORS } from '../data/defaultExercises';
+
+interface StepperInputProps {
+  value: number;
+  step: number;
+  inputStep: string;
+  widthClass: string;
+  parse: (raw: string) => number;
+  onChange: (value: number) => void;
+}
+
+// Number input flanked by -/+ buttons, shared by the weight, reps and distance columns
+const StepperInput: React.FC<StepperInputProps> = ({ value, step, inputStep, widthClass, parse, onChange }) => (
+  <div className="flex items-center justify-center gap-1">
+    <button
+      onClick={() => onChange(Math.max(0, +((value || 0) - step).toFixed(2)))}
+      className="w-6 h-8 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 flex items-center justify-center active:scale-90"
+    >
+      <Minus className="w-3 h-3" />
+    </button>
+    <input
+      type="number"
+      step={inputStep}
+      min="0"
+      value={value === 0 ? '' : value}
+      placeholder="0"
+      onChange={(e) => onChange(parse(e.target.value) || 0)}
+      className={`${widthClass} h-8 bg-slate-800/90 border border-slate-700 rounded-lg text-center font-tabular font-bold text-sm text-white focus:outline-none focus:border-emerald-500`}
+    />
+    <button
+      onClick={() => onChange(+((value || 0) + step).toFixed(2))}
+      className="w-6 h-8 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 flex items-center justify-center active:scale-90"
+    >
+      <Plus className="w-3 h-3" />
+    </button>
+  </div>
+);
+
+// Free text m:ss / h:mm:ss input that commits on blur or Enter
+const DurationInput: React.FC<{ seconds: number; onChange: (seconds: number) => void }> = ({
+  seconds,
+  onChange,
+}) => {
+  const [draft, setDraft] = useState(seconds ? formatDuration(seconds) : '');
+
+  useEffect(() => {
+    setDraft(seconds ? formatDuration(seconds) : '');
+  }, [seconds]);
+
+  const commit = () => {
+    const parsed = parseDuration(draft);
+    if (parsed === null) {
+      setDraft(seconds ? formatDuration(seconds) : '');
+      return;
+    }
+    onChange(parsed);
+    setDraft(parsed ? formatDuration(parsed) : '');
+  };
+
+  return (
+    <div className="flex items-center justify-center">
+      <input
+        type="text"
+        inputMode="numeric"
+        value={draft}
+        placeholder="m:ss"
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+        className="w-20 h-8 bg-slate-800/90 border border-slate-700 rounded-lg text-center font-tabular font-bold text-sm text-white focus:outline-none focus:border-emerald-500"
+      />
+    </div>
+  );
+};
 
 interface WorkoutDayViewProps {
   onOpenRoutines: () => void;
@@ -50,7 +126,12 @@ export const WorkoutDayView: React.FC<WorkoutDayViewProps> = ({
     openExerciseSelector,
     reorderExercises,
     personalRecords,
+    exercises,
   } = useWorkout();
+
+  const getMetricType = (exerciseId: string): MetricType =>
+    exercises.find((e) => e.id === exerciseId)?.metricType ?? 'weight_reps';
+  const distanceUnit = getDistanceUnit(settings.unit);
 
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [workoutNotesInput, setWorkoutNotesInput] = useState(currentDayWorkout.notes || '');
@@ -97,6 +178,8 @@ export const WorkoutDayView: React.FC<WorkoutDayViewProps> = ({
     addSet(we.id, {
       weight: lastSet.weight,
       reps: lastSet.reps,
+      distance: lastSet.distance,
+      timeSeconds: lastSet.timeSeconds,
       setType: lastSet.setType,
     });
   };
@@ -254,6 +337,11 @@ export const WorkoutDayView: React.FC<WorkoutDayViewProps> = ({
           currentDayWorkout.exercises.map((we, exIdx) => {
             const catColor = CATEGORY_COLORS[we.category] || CATEGORY_COLORS.Other;
             const pr = personalRecords[we.exerciseId];
+            const metricType = getMetricType(we.exerciseId);
+            const showWeight = metricType === 'weight_reps';
+            const showReps = metricType === 'weight_reps' || metricType === 'reps_only';
+            const showDistance = metricType === 'distance_time';
+            const showTime = metricType === 'distance_time' || metricType === 'time_only';
 
             return (
               <div
@@ -273,7 +361,7 @@ export const WorkoutDayView: React.FC<WorkoutDayViewProps> = ({
                         <h4 className="text-sm font-bold text-white truncate">
                           {we.exerciseName}
                         </h4>
-                        {pr && (
+                        {pr && showWeight && (
                           <button
                             onClick={() => onOpenExerciseHistory(we.exerciseId)}
                             className="text-[10px] font-semibold text-amber-400 bg-amber-950/40 border border-amber-800/30 px-1.5 py-0.5 rounded flex items-center gap-0.5 shrink-0"
@@ -337,9 +425,11 @@ export const WorkoutDayView: React.FC<WorkoutDayViewProps> = ({
                       <tr className="border-b border-slate-800/80 text-[10px] uppercase font-bold tracking-wider text-slate-400 bg-slate-950/30">
                         <th className="py-2 pl-3 w-10 text-center">Set</th>
                         <th className="py-2 px-1 w-12 text-center">Type</th>
-                        <th className="py-2 px-2 text-center">{settings.unit.toUpperCase()}</th>
-                        <th className="py-2 px-2 text-center">Reps</th>
-                        <th className="py-2 px-2 text-center hidden sm:table-cell">Est. 1RM</th>
+                        {showWeight && <th className="py-2 px-2 text-center">{settings.unit.toUpperCase()}</th>}
+                        {showReps && <th className="py-2 px-2 text-center">Reps</th>}
+                        {showDistance && <th className="py-2 px-2 text-center">{distanceUnit.toUpperCase()}</th>}
+                        {showTime && <th className="py-2 px-2 text-center">Time</th>}
+                        {showWeight && <th className="py-2 px-2 text-center hidden sm:table-cell">Est. 1RM</th>}
                         <th className="py-2 pr-3 w-16 text-center">Done</th>
                         <th className="py-2 pr-2 w-8 text-center"></th>
                       </tr>
@@ -386,87 +476,63 @@ export const WorkoutDayView: React.FC<WorkoutDayViewProps> = ({
                             </td>
 
                             {/* Weight Stepper & Input */}
-                            <td className="py-2.5 px-2">
-                              <div className="flex items-center justify-center gap-1">
-                                <button
-                                  onClick={() =>
-                                    updateSet(we.id, set.id, {
-                                      weight: Math.max(0, (set.weight || 0) - (settings.unit === 'lbs' ? 5 : 2.5)),
-                                    })
-                                  }
-                                  className="w-6 h-8 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 flex items-center justify-center active:scale-90"
-                                >
-                                  <Minus className="w-3 h-3" />
-                                </button>
-                                <input
-                                  type="number"
-                                  step={settings.unit === 'lbs' ? '2.5' : '1'}
-                                  min="0"
-                                  value={set.weight === 0 ? '' : set.weight}
-                                  placeholder="0"
-                                  onChange={(e) =>
-                                    updateSet(we.id, set.id, {
-                                      weight: parseFloat(e.target.value) || 0,
-                                    })
-                                  }
-                                  className="w-16 h-8 bg-slate-800/90 border border-slate-700 rounded-lg text-center font-tabular font-bold text-sm text-white focus:outline-none focus:border-emerald-500"
+                            {showWeight && (
+                              <td className="py-2.5 px-2">
+                                <StepperInput
+                                  value={set.weight}
+                                  step={settings.unit === 'lbs' ? 5 : 2.5}
+                                  inputStep={settings.unit === 'lbs' ? '2.5' : '1'}
+                                  widthClass="w-16"
+                                  parse={parseFloat}
+                                  onChange={(weight) => updateSet(we.id, set.id, { weight })}
                                 />
-                                <button
-                                  onClick={() =>
-                                    updateSet(we.id, set.id, {
-                                      weight: (set.weight || 0) + (settings.unit === 'lbs' ? 5 : 2.5),
-                                    })
-                                  }
-                                  className="w-6 h-8 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 flex items-center justify-center active:scale-90"
-                                >
-                                  <Plus className="w-3 h-3" />
-                                </button>
-                              </div>
-                            </td>
+                              </td>
+                            )}
 
                             {/* Reps Stepper & Input */}
-                            <td className="py-2.5 px-2">
-                              <div className="flex items-center justify-center gap-1">
-                                <button
-                                  onClick={() =>
-                                    updateSet(we.id, set.id, {
-                                      reps: Math.max(0, (set.reps || 0) - 1),
-                                    })
-                                  }
-                                  className="w-6 h-8 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 flex items-center justify-center active:scale-90"
-                                >
-                                  <Minus className="w-3 h-3" />
-                                </button>
-                                <input
-                                  type="number"
-                                  step="1"
-                                  min="0"
-                                  value={set.reps === 0 ? '' : set.reps}
-                                  placeholder="0"
-                                  onChange={(e) =>
-                                    updateSet(we.id, set.id, {
-                                      reps: parseInt(e.target.value, 10) || 0,
-                                    })
-                                  }
-                                  className="w-14 h-8 bg-slate-800/90 border border-slate-700 rounded-lg text-center font-tabular font-bold text-sm text-white focus:outline-none focus:border-emerald-500"
+                            {showReps && (
+                              <td className="py-2.5 px-2">
+                                <StepperInput
+                                  value={set.reps}
+                                  step={1}
+                                  inputStep="1"
+                                  widthClass="w-14"
+                                  parse={(raw) => parseInt(raw, 10)}
+                                  onChange={(reps) => updateSet(we.id, set.id, { reps })}
                                 />
-                                <button
-                                  onClick={() =>
-                                    updateSet(we.id, set.id, {
-                                      reps: (set.reps || 0) + 1,
-                                    })
-                                  }
-                                  className="w-6 h-8 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 flex items-center justify-center active:scale-90"
-                                >
-                                  <Plus className="w-3 h-3" />
-                                </button>
-                              </div>
-                            </td>
+                              </td>
+                            )}
+
+                            {/* Distance Stepper & Input */}
+                            {showDistance && (
+                              <td className="py-2.5 px-2">
+                                <StepperInput
+                                  value={set.distance || 0}
+                                  step={0.5}
+                                  inputStep="0.01"
+                                  widthClass="w-16"
+                                  parse={parseFloat}
+                                  onChange={(distance) => updateSet(we.id, set.id, { distance })}
+                                />
+                              </td>
+                            )}
+
+                            {/* Duration Input */}
+                            {showTime && (
+                              <td className="py-2.5 px-2">
+                                <DurationInput
+                                  seconds={set.timeSeconds || 0}
+                                  onChange={(timeSeconds) => updateSet(we.id, set.id, { timeSeconds })}
+                                />
+                              </td>
+                            )}
 
                             {/* Est 1RM column */}
-                            <td className="py-2.5 px-2 text-center font-tabular text-slate-400 hidden sm:table-cell">
-                              {est1RM > 0 ? `${est1RM} ${settings.unit}` : '-'}
-                            </td>
+                            {showWeight && (
+                              <td className="py-2.5 px-2 text-center font-tabular text-slate-400 hidden sm:table-cell">
+                                {est1RM > 0 ? `${est1RM} ${settings.unit}` : '-'}
+                              </td>
+                            )}
 
                             {/* Completion Checkmark Button (>= 44px hitbox) */}
                             <td className="py-2.5 pr-3 text-center">
@@ -517,7 +583,7 @@ export const WorkoutDayView: React.FC<WorkoutDayViewProps> = ({
                     <button
                       onClick={() => handleCopyLastSet(we)}
                       className="h-9 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 flex items-center gap-1.5 transition-colors active:scale-95 border border-slate-700/80"
-                      title="Copy previous set's weight and reps"
+                      title="Copy previous set"
                     >
                       <Copy className="w-3.5 h-3.5 text-slate-400" />
                       <span>Copy Set</span>
