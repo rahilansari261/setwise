@@ -1,0 +1,3 @@
+{
+  "extends": "@setwise/config/tsconfig.base.json"
+}

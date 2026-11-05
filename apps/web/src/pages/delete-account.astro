@@ -1,0 +1,43 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { APP_NAME, CONTACT_EMAIL } from "../site.config";
+
+const subject = encodeURIComponent(`Delete my ${APP_NAME} account`);
+const body = encodeURIComponent(
+	`Please delete my ${APP_NAME} account.\n\nEmail I sign in with: \nSigned in with (Google / Apple): \n`,
+);
+---
+
+<Layout title={`Delete your account — ${APP_NAME}`} description={`How to delete your ${APP_NAME} account and data.`}>
+	<main class="mx-auto max-w-2xl px-4 pt-10 sm:px-6">
+		<p class="label">Account &amp; data</p>
+		<h1 class="mt-3 font-display text-4xl font-semibold tracking-tight">Delete your {APP_NAME} account</h1>
+		<article class="prose-legal mt-6">
+			<h2>In the app (instant)</h2>
+			<ul>
+				<li>Open {APP_NAME} and tap the settings icon on the Today screen.</li>
+				<li>Scroll to <strong>Account</strong> and tap <strong>Delete account</strong>.</li>
+				<li>Confirm. Your account is removed from our servers and all workout data on the phone is erased.</li>
+			</ul>
+
+			<h2>By email (if you no longer have the app)</h2>
+			<p>
+				Email <a href={`mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`}>{CONTACT_EMAIL}</a> from the
+				address you sign in with, with the subject "Delete my {APP_NAME} account". We delete the account within 30
+				days and confirm by email.
+			</p>
+
+			<h2>What gets deleted</h2>
+			<ul>
+				<li>Your account: email, name, sign-in provider ID and sign-in history.</li>
+				<li>
+					Workout data lives only on your phone. Deleting from the app erases it; uninstalling the app also removes
+					it. We hold no copy, so we can't delete or restore it for you.
+				</li>
+			</ul>
+
+			<h2>What we keep</h2>
+			<p>Nothing tied to your account. Security logs kept by the sign-in service expire on their own after a short retention period.</p>
+		</article>
+	</main>
+</Layout>
