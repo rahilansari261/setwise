@@ -14,8 +14,10 @@ import { DEFAULT_ROUTINES, splitById } from "@/src/data/routines";
 import * as db from "@/src/db/database";
 import { convertDistance, convertWeight, estimate1RM } from "@/src/lib/calc";
 import { todayISO } from "@/src/lib/dates";
+import { upsertMeasurement } from "@/src/lib/vtaper";
 import type {
 	ActiveRoutine,
+	BodyMeasurement,
 	Exercise,
 	PersonalRecord,
 	Profile,
@@ -41,6 +43,9 @@ const KV = {
 	profile: "profile",
 	settings: "settings",
 	activeRoutine: "active_routine",
+	measurements: "measurements",
+	/** Set once the V-taper routines have been added, so deleting one doesn't bring it back. */
+	vtaperRoutinesSeeded: "vtaper_routines_seeded",
 } as const;
 const SAVE_DELAY_MS = 400;
 const SET_TYPE_ORDER: SetType[] = ["normal", "warmup", "drop", "failure"];
@@ -60,6 +65,8 @@ export interface BackupFile {
 	routines: Routine[];
 	activeRoutine: ActiveRoutine | null;
 	workouts: Record<string, WorkoutDay>;
+	/** Missing in backups made before measurements existed. */
+	measurements?: BodyMeasurement[];
 }
 
 let idCounter = 0;
@@ -91,26 +98,36 @@ function useWorkoutStoreValue() {
 	const [activeRoutine, setActiveRoutineState] = useState<ActiveRoutine | null>(
 		null,
 	);
+	const [measurements, setMeasurements] = useState<BodyMeasurement[]>([]);
 	const [currentDate, setCurrentDate] = useState(todayISO);
 
 	// The ref is the synchronous source of truth so set actions can read their own result.
 	const workoutsRef = useRef<Record<string, WorkoutDay>>({});
+	const measurementsRef = useRef<BodyMeasurement[]>([]);
 	const pendingSaves = useRef(new Map<string, ReturnType<typeof setTimeout>>());
 
 	const load = useCallback(async () => {
 		await db.migrate();
-		const [p, s, a, w, c, r] = await Promise.all([
+		const [p, s, a, w, c, r, m, seeded] = await Promise.all([
 			db.getKV<Profile>(KV.profile),
 			db.getKV<Settings>(KV.settings),
 			db.getKV<ActiveRoutine>(KV.activeRoutine),
 			db.loadWorkoutDays(),
 			db.loadCustomExercises(),
 			db.loadRoutines(),
+			db.getKV<BodyMeasurement[]>(KV.measurements),
+			db.getKV<boolean>(KV.vtaperRoutinesSeeded),
 		]);
 		let loadedRoutines = r;
-		if (loadedRoutines.length === 0) {
-			loadedRoutines = DEFAULT_ROUTINES;
+		if (!seeded) {
+			// Phones set up before the V-taper routines get them first in the list; their own routines stay.
+			const have = new Set(r.map((x) => x.id));
+			loadedRoutines = [
+				...DEFAULT_ROUTINES.filter((x) => !have.has(x.id)),
+				...r,
+			];
 			await db.saveRoutines(loadedRoutines);
+			await db.setKV(KV.vtaperRoutinesSeeded, true);
 		}
 		workoutsRef.current = w;
 		setProfile(p);
@@ -119,6 +136,8 @@ function useWorkoutStoreValue() {
 		setWorkouts(w);
 		setCustomExercises(c);
 		setRoutines(loadedRoutines);
+		measurementsRef.current = Array.isArray(m) ? m : [];
+		setMeasurements(measurementsRef.current);
 		setReady(true);
 	}, []);
 
@@ -508,6 +527,26 @@ function useWorkoutStoreValue() {
 		db.deleteCustomExercise(id).catch(console.error);
 	}, []);
 
+	// ---- body measurements ------------------------------------------------------------
+
+	const writeMeasurements = useCallback((next: BodyMeasurement[]) => {
+		measurementsRef.current = next;
+		setMeasurements(next);
+		db.setKV(KV.measurements, next).catch(console.error);
+	}, []);
+
+	const saveMeasurement = useCallback(
+		(entry: BodyMeasurement) =>
+			writeMeasurements(upsertMeasurement(measurementsRef.current, entry)),
+		[writeMeasurements],
+	);
+
+	const deleteMeasurement = useCallback(
+		(date: string) =>
+			writeMeasurements(measurementsRef.current.filter((m) => m.date !== date)),
+		[writeMeasurements],
+	);
+
 	// ---- settings & profile -------------------------------------------------------
 
 	const updateSettings = useCallback(
@@ -551,15 +590,16 @@ function useWorkoutStoreValue() {
 	}, []);
 
 	const completeOnboarding = useCallback(
-		async (next: Profile, unit: Unit) => {
+		async (next: Profile, unit: Unit, start?: BodyMeasurement) => {
 			await updateSettings({ unit });
+			if (start) saveMeasurement(start);
 			const routineId = splitById(next.split).routineId;
 			if (routineId && routines.some((r) => r.id === routineId)) {
 				setActiveRoutine({ routineId, nextDayIndex: 0 });
 			}
 			await saveProfile(next);
 		},
-		[updateSettings, routines, setActiveRoutine, saveProfile],
+		[updateSettings, saveMeasurement, routines, setActiveRoutine, saveProfile],
 	);
 
 	// ---- backup ------------------------------------------------------------------------
@@ -576,8 +616,17 @@ function useWorkoutStoreValue() {
 			routines,
 			activeRoutine,
 			workouts: workoutsRef.current,
+			measurements,
 		};
-	}, [flushSaves, profile, settings, customExercises, routines, activeRoutine]);
+	}, [
+		flushSaves,
+		profile,
+		settings,
+		customExercises,
+		routines,
+		activeRoutine,
+		measurements,
+	]);
 
 	/** Accepts a Setwise backup or a backup from the old FitNotes web app. */
 	const importBackup = useCallback(
@@ -603,6 +652,8 @@ function useWorkoutStoreValue() {
 			if (data.profile) await db.setKV(KV.profile, data.profile);
 			if (data.activeRoutine)
 				await db.setKV(KV.activeRoutine, data.activeRoutine);
+			if (Array.isArray(data.measurements))
+				await db.setKV(KV.measurements, data.measurements);
 
 			workoutsRef.current = nextWorkouts;
 			setWorkouts(nextWorkouts);
@@ -611,6 +662,10 @@ function useWorkoutStoreValue() {
 			setSettings(nextSettings);
 			if (data.profile) setProfile(data.profile);
 			if (data.activeRoutine) setActiveRoutineState(data.activeRoutine);
+			if (Array.isArray(data.measurements)) {
+				measurementsRef.current = data.measurements;
+				setMeasurements(data.measurements);
+			}
 			return Object.keys(nextWorkouts).length;
 		},
 		[flushSaves, routines, settings],
@@ -621,6 +676,7 @@ function useWorkoutStoreValue() {
 		pendingSaves.current.clear();
 		await db.wipeAll();
 		await db.saveRoutines(DEFAULT_ROUTINES);
+		await db.setKV(KV.vtaperRoutinesSeeded, true);
 		workoutsRef.current = {};
 		setWorkouts({});
 		setCustomExercises([]);
@@ -628,6 +684,8 @@ function useWorkoutStoreValue() {
 		setSettings(DEFAULT_SETTINGS);
 		setActiveRoutineState(null);
 		setProfile(null);
+		measurementsRef.current = [];
+		setMeasurements([]);
 	}, []);
 
 	return {
@@ -641,6 +699,9 @@ function useWorkoutStoreValue() {
 		routines,
 		activeRoutine,
 		personalRecords,
+		measurements,
+		saveMeasurement,
+		deleteMeasurement,
 		currentDate,
 		setCurrentDate,
 		lastPerformance,

@@ -1,67 +1,43 @@
 import { DEFAULT_EXERCISES } from "@/src/data/exercises";
+import { DEFAULT_ROUTINES } from "@/src/data/routines";
 import { estimate1RM, roundTo } from "@/src/lib/calc";
 import { addDays, fromISO, todayISO } from "@/src/lib/dates";
 import type { BackupFile } from "@/src/state/workout-store";
 import type {
+	BodyMeasurement,
 	Settings,
 	WorkoutDay,
 	WorkoutExercise,
 	WorkoutSet,
 } from "@/src/types";
 
-// Starting working weight (kg) and rep target for every exercise in the PPL preset.
+// Starting working weight (kg) and rep target for every weighted exercise in the V-Taper PPL preset.
 const PLAN: Record<string, { start: number; reps: number; step: number }> = {
-	"barbell-bench-press": { start: 60, reps: 6, step: 2.5 },
-	"overhead-press": { start: 35, reps: 6, step: 2.5 },
-	"incline-dumbbell-bench-press": { start: 20, reps: 10, step: 2 },
+	"incline-barbell-bench-press": { start: 50, reps: 8, step: 2.5 },
+	"dumbbell-shoulder-press": { start: 18, reps: 8, step: 2 },
+	"cable-lateral-raise": { start: 5, reps: 15, step: 1 },
+	"low-to-high-cable-fly": { start: 10, reps: 12, step: 1 },
 	"dumbbell-lateral-raise": { start: 8, reps: 14, step: 1 },
-	"cable-rope-triceps-pushdown": { start: 25, reps: 12, step: 2.5 },
-	"conventional-deadlift": { start: 100, reps: 5, step: 5 },
-	"barbell-row": { start: 55, reps: 8, step: 2.5 },
+	"overhead-triceps-extension": { start: 20, reps: 12, step: 2.5 },
+	"wide-grip-pull-up": { start: 0, reps: 8, step: 2.5 },
 	"lat-pulldown": { start: 50, reps: 10, step: 2.5 },
-	"face-pull": { start: 20, reps: 15, step: 2.5 },
-	"barbell-bicep-curl": { start: 25, reps: 10, step: 2.5 },
+	"straight-arm-pulldown": { start: 20, reps: 12, step: 2.5 },
+	"single-arm-dumbbell-row": { start: 24, reps: 10, step: 2 },
+	"reverse-pec-deck-fly": { start: 25, reps: 15, step: 2.5 },
 	"dumbbell-hammer-curl": { start: 12, reps: 12, step: 1 },
 	"barbell-back-squat": { start: 80, reps: 6, step: 2.5 },
 	"romanian-deadlift": { start: 70, reps: 8, step: 2.5 },
-	"leg-press": { start: 140, reps: 10, step: 10 },
 	"lying-leg-curl": { start: 35, reps: 12, step: 2.5 },
 	"standing-calf-raise": { start: 60, reps: 15, step: 5 },
 };
 
-const DAYS = [
-	{
-		name: "Push",
-		ids: [
-			"barbell-bench-press",
-			"overhead-press",
-			"incline-dumbbell-bench-press",
-			"dumbbell-lateral-raise",
-			"cable-rope-triceps-pushdown",
-		],
-	},
-	{
-		name: "Pull",
-		ids: [
-			"conventional-deadlift",
-			"barbell-row",
-			"lat-pulldown",
-			"face-pull",
-			"barbell-bicep-curl",
-			"dumbbell-hammer-curl",
-		],
-	},
-	{
-		name: "Legs",
-		ids: [
-			"barbell-back-squat",
-			"romanian-deadlift",
-			"leg-press",
-			"lying-leg-curl",
-			"standing-calf-raise",
-		],
-	},
-];
+const ROUTINE =
+	DEFAULT_ROUTINES.find((r) => r.id === "vt-ppl") ?? DEFAULT_ROUTINES[0];
+// Timed moves (stomach vacuum) are left out; the demo only fakes weight × reps sets.
+const DAYS = (ROUTINE?.days ?? []).map((d) => ({
+	name: d.name,
+	ids: d.exerciseIds.filter((id) => PLAN[id]),
+}));
 
 /** Small deterministic PRNG so every run produces the same history. */
 function prng(seed: number) {
@@ -73,7 +49,7 @@ function prng(seed: number) {
 }
 
 /**
- * Builds about six months of Push/Pull/Legs history ending yesterday: six training days a week,
+ * Builds about six months of V-Taper Push/Pull/Legs history ending yesterday: six training days a week,
  * roughly one missed session in ten, steady progression with a lighter week every eighth week.
  */
 export function buildDemoBackup(settings: Settings, months = 6): BackupFile {
@@ -155,6 +131,20 @@ export function buildDemoBackup(settings: Settings, months = 6): BackupFile {
 		workouts[date] = { date, title: day.name, exercises };
 	}
 
+	// A tape check every two weeks: shoulders creep up, the waist comes in.
+	const measurements: BodyMeasurement[] = [];
+	const totalDays = Math.max(1, Math.round(months * 30.4));
+	for (let i = 0; i <= totalDays; i += 14) {
+		const t = i / totalDays;
+		measurements.push({
+			date: addDays(start, i),
+			shouldersCm: Math.round((114 + 4.5 * t + (rand() - 0.5) * 0.6) * 10) / 10,
+			waistCm: Math.round((86 - 5 * t + (rand() - 0.5) * 0.8) * 10) / 10,
+			chestCm: Math.round((98 + 3 * t) * 10) / 10,
+			armCm: Math.round((34 + 1.5 * t) * 10) / 10,
+		});
+	}
+
 	return {
 		app: "setwise",
 		version: 1,
@@ -163,8 +153,12 @@ export function buildDemoBackup(settings: Settings, months = 6): BackupFile {
 		settings: { ...settings, unit: "kg" },
 		customExercises: [],
 		routines: [],
-		activeRoutine: { routineId: "ppl", nextDayIndex: rotation % DAYS.length },
+		activeRoutine: {
+			routineId: ROUTINE?.id ?? "vt-ppl",
+			nextDayIndex: rotation % Math.max(1, DAYS.length),
+		},
 		workouts,
+		measurements,
 	};
 
 	function makeSet(

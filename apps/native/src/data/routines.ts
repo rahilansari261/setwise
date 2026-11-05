@@ -1,59 +1,64 @@
 import type { Routine, SplitId } from "@/src/types";
 
+// Every default routine is built around the V-taper: lats and side delts get the most weekly sets,
+// rear delts and upper chest round out the frame, and legs are kept to what balance needs.
 export const DEFAULT_ROUTINES: Routine[] = [
 	{
-		id: "ppl",
-		name: "Push / Pull / Legs",
+		id: "vt-ppl",
+		name: "V-Taper Push / Pull / Legs",
 		description:
-			"Push muscles, pull muscles and lower body on separate days. Run it 3 or 6 days a week.",
+			"Six days. Side delts on every push and leg day, two lat movements on every pull day.",
 		days: [
 			{
-				name: "Push",
+				name: "Push · Delts",
 				exerciseIds: [
-					"barbell-bench-press",
-					"overhead-press",
-					"incline-dumbbell-bench-press",
+					"incline-barbell-bench-press",
+					"dumbbell-shoulder-press",
+					"cable-lateral-raise",
+					"low-to-high-cable-fly",
 					"dumbbell-lateral-raise",
-					"cable-rope-triceps-pushdown",
+					"overhead-triceps-extension",
 				],
 			},
 			{
-				name: "Pull",
+				name: "Pull · Width",
 				exerciseIds: [
-					"conventional-deadlift",
-					"barbell-row",
+					"wide-grip-pull-up",
 					"lat-pulldown",
-					"face-pull",
-					"barbell-bicep-curl",
+					"straight-arm-pulldown",
+					"single-arm-dumbbell-row",
+					"reverse-pec-deck-fly",
 					"dumbbell-hammer-curl",
 				],
 			},
 			{
-				name: "Legs",
+				name: "Legs · Core",
 				exerciseIds: [
 					"barbell-back-squat",
 					"romanian-deadlift",
-					"leg-press",
 					"lying-leg-curl",
 					"standing-calf-raise",
+					"cable-lateral-raise",
+					"stomach-vacuum",
 				],
 			},
 		],
 	},
 	{
-		id: "upper-lower",
-		name: "Upper / Lower",
-		description: "Four days, each muscle group twice a week.",
+		id: "vt-upper-lower",
+		name: "V-Taper Upper / Lower",
+		description:
+			"Four days. Each upper day trains lats, side delts, rear delts and upper chest.",
 		days: [
 			{
 				name: "Upper A",
 				exerciseIds: [
-					"barbell-bench-press",
-					"barbell-row",
-					"overhead-press",
-					"lat-pulldown",
-					"skull-crusher",
-					"incline-dumbbell-curl",
+					"pull-up",
+					"incline-dumbbell-bench-press",
+					"seated-cable-row",
+					"dumbbell-lateral-raise",
+					"face-pull",
+					"cable-rope-triceps-pushdown",
 				],
 			},
 			{
@@ -61,148 +66,126 @@ export const DEFAULT_ROUTINES: Routine[] = [
 				exerciseIds: [
 					"barbell-back-squat",
 					"romanian-deadlift",
-					"leg-press",
+					"lying-leg-curl",
 					"standing-calf-raise",
-					"hanging-leg-raise",
+					"stomach-vacuum",
 				],
 			},
 			{
 				name: "Upper B",
 				exerciseIds: [
+					"lat-pulldown",
 					"incline-barbell-bench-press",
-					"pull-up",
-					"dumbbell-shoulder-press",
-					"seated-cable-row",
-					"cable-rope-triceps-pushdown",
-					"dumbbell-hammer-curl",
+					"single-arm-dumbbell-row",
+					"cable-lateral-raise",
+					"rear-delt-dumbbell-fly",
+					"incline-dumbbell-curl",
 				],
 			},
 			{
 				name: "Lower B",
 				exerciseIds: [
-					"conventional-deadlift",
-					"barbell-front-squat",
+					"leg-press",
 					"bulgarian-split-squat",
-					"lying-leg-curl",
+					"seated-leg-curl",
 					"seated-calf-raise",
+					"plank",
 				],
 			},
 		],
 	},
 	{
-		id: "full-body",
-		name: "Full Body",
+		id: "vt-full-body",
+		name: "V-Taper Full Body",
 		description:
-			"Every major muscle, every session. Three days a week with a rest day between.",
+			"Three days for busy weeks. A lat pull, a lateral raise and a rear delt move every session.",
 		days: [
 			{
 				name: "Full Body A",
 				exerciseIds: [
 					"barbell-back-squat",
-					"barbell-bench-press",
-					"barbell-row",
+					"pull-up",
+					"incline-dumbbell-bench-press",
 					"dumbbell-lateral-raise",
-					"plank",
+					"face-pull",
 				],
 			},
 			{
 				name: "Full Body B",
 				exerciseIds: [
-					"conventional-deadlift",
-					"overhead-press",
+					"romanian-deadlift",
 					"lat-pulldown",
-					"walking-lunges",
-					"hanging-leg-raise",
+					"dumbbell-shoulder-press",
+					"cable-lateral-raise",
+					"reverse-pec-deck-fly",
 				],
 			},
 			{
 				name: "Full Body C",
 				exerciseIds: [
-					"barbell-front-squat",
-					"incline-dumbbell-bench-press",
-					"seated-cable-row",
-					"barbell-bicep-curl",
-					"cable-rope-triceps-pushdown",
+					"leg-press",
+					"single-arm-dumbbell-row",
+					"incline-barbell-bench-press",
+					"machine-lateral-raise",
+					"straight-arm-pulldown",
 				],
 			},
 		],
 	},
 	{
-		id: "bro-split",
-		name: "Bro Split",
-		description: "One muscle group per day, five days a week.",
+		id: "vt-width",
+		name: "Width Split",
+		description:
+			"Five days for experienced lifters. Back width and delts twice a week, everything else once.",
 		days: [
 			{
-				name: "Chest",
+				name: "Back Width",
 				exerciseIds: [
-					"barbell-bench-press",
-					"incline-dumbbell-bench-press",
-					"chest-dips",
-					"cable-crossover",
-					"pec-deck-machine",
+					"wide-grip-pull-up",
+					"lat-pulldown",
+					"single-arm-lat-pulldown",
+					"straight-arm-pulldown",
+					"seated-cable-row",
 				],
 			},
 			{
-				name: "Back",
+				name: "Delts",
 				exerciseIds: [
-					"conventional-deadlift",
-					"pull-up",
-					"barbell-row",
-					"lat-pulldown",
-					"seated-cable-row",
+					"dumbbell-shoulder-press",
+					"cable-lateral-raise",
+					"machine-lateral-raise",
+					"cable-y-raise",
+					"rear-delt-dumbbell-fly",
 				],
 			},
 			{
 				name: "Legs",
 				exerciseIds: [
 					"barbell-back-squat",
-					"leg-press",
 					"romanian-deadlift",
 					"leg-extension",
+					"lying-leg-curl",
 					"standing-calf-raise",
 				],
 			},
 			{
-				name: "Shoulders",
+				name: "Upper Chest · Lats",
 				exerciseIds: [
-					"overhead-press",
+					"incline-barbell-bench-press",
+					"low-to-high-cable-fly",
+					"pull-up",
+					"single-arm-dumbbell-row",
+					"face-pull",
+				],
+			},
+			{
+				name: "Delts · Arms",
+				exerciseIds: [
 					"dumbbell-lateral-raise",
 					"reverse-pec-deck-fly",
-					"face-pull",
-					"dumbbell-shrug",
-				],
-			},
-			{
-				name: "Arms",
-				exerciseIds: [
-					"barbell-bicep-curl",
-					"close-grip-bench-press",
-					"dumbbell-hammer-curl",
-					"skull-crusher",
-					"cable-rope-triceps-pushdown",
-				],
-			},
-		],
-	},
-	{
-		id: "strength-5x5",
-		name: "Strength 5×5",
-		description: "Linear progression on the five big compound lifts.",
-		days: [
-			{
-				name: "Workout A",
-				exerciseIds: [
-					"barbell-back-squat",
-					"barbell-bench-press",
-					"barbell-row",
-				],
-			},
-			{
-				name: "Workout B",
-				exerciseIds: [
-					"barbell-back-squat",
-					"overhead-press",
-					"conventional-deadlift",
+					"incline-dumbbell-curl",
+					"overhead-triceps-extension",
+					"stomach-vacuum",
 				],
 			},
 		],
@@ -220,32 +203,32 @@ export interface SplitOption {
 
 export const SPLITS: SplitOption[] = [
 	{
-		id: "ppl",
-		name: "Push · Pull · Legs",
-		description: "Chest + triceps / back + biceps / legs",
-		routineId: "ppl",
+		id: "vt_ppl",
+		name: "V-Taper PPL",
+		description: "Delts on push & legs, width on pull",
+		routineId: "vt-ppl",
 		week: ["PUSH", "PULL", "LEGS", "PUSH", "PULL", "LEGS", null],
 	},
 	{
-		id: "upper_lower",
-		name: "Upper / Lower",
-		description: "Alternate upper and lower body",
-		routineId: "upper-lower",
+		id: "vt_upper_lower",
+		name: "V-Taper Upper / Lower",
+		description: "Every upper day builds the V",
+		routineId: "vt-upper-lower",
 		week: ["UPPR", "LOWR", null, "UPPR", "LOWR", null, null],
 	},
 	{
-		id: "full_body",
-		name: "Full Body",
-		description: "Every muscle, every session",
-		routineId: "full-body",
+		id: "vt_full_body",
+		name: "V-Taper Full Body",
+		description: "Lats and delts in every session",
+		routineId: "vt-full-body",
 		week: ["FULL", null, "FULL", null, "FULL", null, null],
 	},
 	{
-		id: "bro",
-		name: "Bro Split",
-		description: "One muscle group per day",
-		routineId: "bro-split",
-		week: ["CHST", "BACK", "LEGS", "SHLD", "ARMS", null, null],
+		id: "vt_width",
+		name: "Width Split",
+		description: "Back width and delts twice a week",
+		routineId: "vt-width",
+		week: ["WDTH", "DLTS", "LEGS", "CHST", "DLTS", null, null],
 	},
 	{
 		id: "custom",
@@ -256,8 +239,17 @@ export const SPLITS: SplitOption[] = [
 	},
 ];
 
-export function splitById(id: SplitId): SplitOption {
-	return SPLITS.find((s) => s.id === id) ?? (SPLITS.at(-1) as SplitOption);
+/** Profiles saved before the V-taper splits keep their nearest match. */
+const LEGACY_SPLITS: Record<string, SplitId> = {
+	ppl: "vt_ppl",
+	upper_lower: "vt_upper_lower",
+	full_body: "vt_full_body",
+	bro: "vt_width",
+};
+
+export function splitById(id: string): SplitOption {
+	const current = LEGACY_SPLITS[id] ?? id;
+	return SPLITS.find((s) => s.id === current) ?? (SPLITS.at(-1) as SplitOption);
 }
 
 /** Training weekdays for a split as JS day numbers (0 = Sunday). */

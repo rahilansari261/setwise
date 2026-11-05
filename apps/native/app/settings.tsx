@@ -114,7 +114,7 @@ export default function SettingsScreen() {
 			);
 		});
 
-	// Dev/preview builds only: fills the phone with ~6 months of PPL history to test performance.
+	// Dev/preview builds only: fills the phone with ~6 months of V-Taper PPL history and tape measurements to test performance.
 	const loadDemoData = () =>
 		Alert.alert(
 			"Load 6 months of demo data?",

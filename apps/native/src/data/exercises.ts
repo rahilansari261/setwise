@@ -63,6 +63,12 @@ export const DEFAULT_EXERCISES: Exercise[] = [
 		metricType: "weight_reps",
 	},
 
+	{
+		id: "low-to-high-cable-fly",
+		name: "Low-to-High Cable Fly",
+		category: "Chest",
+		metricType: "weight_reps",
+	},
 	// BACK
 	{
 		id: "conventional-deadlift",
@@ -125,6 +131,24 @@ export const DEFAULT_EXERCISES: Exercise[] = [
 		metricType: "weight_reps",
 	},
 
+	{
+		id: "wide-grip-pull-up",
+		name: "Wide-Grip Pull-Up",
+		category: "Back",
+		metricType: "weight_reps",
+	},
+	{
+		id: "single-arm-lat-pulldown",
+		name: "Single-Arm Lat Pulldown",
+		category: "Back",
+		metricType: "weight_reps",
+	},
+	{
+		id: "straight-arm-pulldown",
+		name: "Straight-Arm Pulldown",
+		category: "Back",
+		metricType: "weight_reps",
+	},
 	// LEGS
 	{
 		id: "barbell-back-squat",
@@ -255,6 +279,24 @@ export const DEFAULT_EXERCISES: Exercise[] = [
 		metricType: "weight_reps",
 	},
 
+	{
+		id: "machine-lateral-raise",
+		name: "Machine Lateral Raise",
+		category: "Shoulders",
+		metricType: "weight_reps",
+	},
+	{
+		id: "cable-y-raise",
+		name: "Cable Y-Raise",
+		category: "Shoulders",
+		metricType: "weight_reps",
+	},
+	{
+		id: "rear-delt-dumbbell-fly",
+		name: "Rear Delt Dumbbell Fly",
+		category: "Shoulders",
+		metricType: "weight_reps",
+	},
 	// ARMS
 	{
 		id: "barbell-bicep-curl",
@@ -344,6 +386,12 @@ export const DEFAULT_EXERCISES: Exercise[] = [
 		metricType: "reps_only",
 	},
 
+	{
+		id: "stomach-vacuum",
+		name: "Stomach Vacuum",
+		category: "Core",
+		metricType: "time_only",
+	},
 	// CARDIO
 	{
 		id: "treadmill-running",

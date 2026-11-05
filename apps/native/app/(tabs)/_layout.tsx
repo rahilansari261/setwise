@@ -5,7 +5,7 @@ import {
 	Calendar,
 	Dumbbell,
 	type LucideIcon,
-	TrendingUp,
+	PersonStanding,
 } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -17,7 +17,7 @@ const ICONS: Record<string, { icon: LucideIcon; label: string }> = {
 	index: { icon: Dumbbell, label: "Today" },
 	calendar: { icon: Calendar, label: "Calendar" },
 	exercises: { icon: BookOpen, label: "Exercises" },
-	progress: { icon: TrendingUp, label: "Progress" },
+	progress: { icon: PersonStanding, label: "Physique" },
 	tools: { icon: Calculator, label: "Tools" },
 };
 

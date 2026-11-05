@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button, Chip, Field, IconButton, T } from "@/src/components/ui";
 import { CATEGORIES, CATEGORY_COLOR } from "@/src/data/exercises";
+import { FOCUS_TARGETS, focusMuscle } from "@/src/lib/vtaper";
 import { useWorkouts } from "@/src/state/workout-store";
 import { colors, fonts } from "@/src/theme";
 import type { Category, Exercise, MetricType } from "@/src/types";
@@ -37,14 +38,17 @@ export function ExerciseList({
 }) {
 	const { exercises } = useWorkouts();
 	const [query, setQuery] = useState("");
-	const [category, setCategory] = useState<Category | "All">("All");
+	const [category, setCategory] = useState<Category | "All" | "V-Taper">("All");
 
 	const filtered = useMemo(() => {
 		const q = query.trim().toLowerCase();
 		return exercises
 			.filter(
 				(e) =>
-					(category === "All" || e.category === category) &&
+					(category === "All" ||
+						(category === "V-Taper"
+							? focusMuscle(e.id, e.name) !== null
+							: e.category === category)) &&
 					(!q || e.name.toLowerCase().includes(q)),
 			)
 			.sort(
@@ -94,7 +98,7 @@ export function ExerciseList({
 						showsHorizontalScrollIndicator={false}
 						contentContainerStyle={{ gap: 6 }}
 					>
-						{(["All", ...CATEGORIES] as const).map((c) => (
+						{(["All", "V-Taper", ...CATEGORIES] as const).map((c) => (
 							<Chip
 								key={c}
 								label={c}
@@ -113,6 +117,7 @@ export function ExerciseList({
 			}
 			renderItem={({ item }) => {
 				const isSelected = selected?.has(item.id) ?? false;
+				const focus = focusMuscle(item.id, item.name);
 				return (
 					<Pressable
 						accessibilityRole={selected ? "checkbox" : "button"}
@@ -131,6 +136,19 @@ export function ExerciseList({
 							<T variant="label" style={{ fontSize: 10, letterSpacing: 1 }}>
 								{item.category}
 								{item.isCustom ? " · CUSTOM" : ""}
+								{focus ? (
+									<T
+										variant="label"
+										style={{
+											fontSize: 10,
+											letterSpacing: 1,
+											color: colors.accent,
+										}}
+									>
+										{" · "}
+										{FOCUS_TARGETS.find((t) => t.id === focus)?.name}
+									</T>
+								) : null}
 							</T>
 						</View>
 						{selected ? (

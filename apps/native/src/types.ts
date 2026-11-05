@@ -82,9 +82,25 @@ export interface Settings {
 }
 
 export type Gender = "male" | "female" | "other";
-export type SplitId = "ppl" | "upper_lower" | "full_body" | "bro" | "custom";
+export type SplitId =
+	| "vt_ppl"
+	| "vt_upper_lower"
+	| "vt_full_body"
+	| "vt_width"
+	| "custom";
 export type Experience = "beginner" | "intermediate" | "advanced";
-export type Goal = "strength" | "muscle" | "fat_loss" | "general";
+/** What the V-taper work leans on: a wider top, a tighter waist, or both. */
+export type Goal = "width" | "waist" | "both";
+
+/** One day's tape measurements. Always centimetres; shown in inches when the unit is lbs. */
+export interface BodyMeasurement {
+	/** YYYY-MM-DD */
+	date: string;
+	shouldersCm?: number;
+	waistCm?: number;
+	chestCm?: number;
+	armCm?: number;
+}
 
 export interface Reminder {
 	enabled: boolean;

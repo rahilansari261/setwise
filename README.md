@@ -1,6 +1,6 @@
 # Setwise
 
-A fast gym workout log. Workouts, body stats and settings live **only on the phone** (SQLite); Supabase is used for sign-in and nothing else.
+A workout log for the **V-taper physique** — wide shoulders and lats over a tight waist. Workouts, tape measurements and settings live **only on the phone** (SQLite); Supabase is used for sign-in and nothing else.
 
 Monorepo scaffolded with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack) (pnpm + Turborepo + Biome).
 
@@ -14,8 +14,9 @@ Monorepo scaffolded with [Better-T-Stack](https://github.com/AmanVarshney01/crea
 
 - **Auth** — Google sign-in (Apple on iOS) → Supabase `signInWithIdToken`. Setup steps are in the Supabase Auth Setup Guide doc.
 - **Secret login** — on the sign-in screen tap the logo 5 times to skip login. Enabled in dev builds and when `EXPO_PUBLIC_ENABLE_SECRET_LOGIN=true`; the `production` EAS profile turns it off.
-- **Onboarding** — name, gender, age, height, weight, units, split (PPL / Upper-Lower / Full Body / Bro / custom), experience, goal, days per week, reminder time and days.
-- **Local data** — `apps/native/src/db/database.ts`. One row per workout day plus a key/value table; JSON backup/CSV export and import in Settings.
+- **Onboarding** — name, gender, age, height, weight, units, starting shoulder + waist measurements (optional), V-taper split (PPL / Upper-Lower / Full Body / Width Split / custom), experience, goal (width / waist / both), days per week, reminder time and days.
+- **V-taper** — `apps/native/src/lib/vtaper.ts`. Shoulder ÷ waist ratio against 1.618 with a goal waist, check-ins on `/measurements`, and a weekly set tracker for lats, side delts, rear delts and upper chest (Physique tab, and on Today before you start). Default routines in `src/data/routines.ts` are all built around it; phones set up earlier get them added once, their own routines stay.
+- **Local data** — `apps/native/src/db/database.ts`. One row per workout day plus a key/value table (measurements are a list under `measurements`); JSON backup/CSV export and import in Settings.
 - **Notifications** — local only (`expo-notifications`): weekly workout reminders and a "rest over" alert when the app is backgrounded.
 - **Design** — "Electric Night": tokens in `apps/native/src/theme.ts` (mirrored in `apps/web/src/styles/global.css`).
 
@@ -30,6 +31,9 @@ pnpm --filter native android
 
 # JS-only changes after the first build
 pnpm dev:native
+
+# Unit tests (node:test, no extra deps)
+pnpm --filter native test
 
 # Marketing site
 pnpm dev:web          # http://localhost:4321

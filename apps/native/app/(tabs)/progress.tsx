@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 
 import { ExerciseProgress } from "@/src/components/exercise-progress";
 import { Chip, Screen, T } from "@/src/components/ui";
+import { FocusCard, RatioCard } from "@/src/components/vtaper";
 import { CATEGORY_COLOR } from "@/src/data/exercises";
 import { fmt } from "@/src/lib/calc";
 import { addDays, shortDate, todayISO } from "@/src/lib/dates";
@@ -43,13 +44,22 @@ export default function Progress() {
 
 	return (
 		<Screen bottomInset={32}>
-			<T variant="label">PROGRESS</T>
+			<T variant="label">PHYSIQUE</T>
 			<T variant="display" style={{ marginTop: 4 }}>
-				Your lifts
+				Your V-taper
+			</T>
+
+			<View style={{ marginTop: 14, gap: 10 }}>
+				<RatioCard />
+				<FocusCard />
+			</View>
+
+			<T variant="label" style={{ marginTop: 28 }}>
+				LIFTS
 			</T>
 
 			{trained.length === 0 ? (
-				<View style={styles.empty}>
+				<View style={[styles.empty, { marginTop: 10 }]}>
 					<T variant="heading">Nothing to chart yet</T>
 					<T variant="small">
 						Log a few sets and your strength trend, records and muscle split
@@ -62,7 +72,7 @@ export default function Progress() {
 						horizontal
 						showsHorizontalScrollIndicator={false}
 						contentContainerStyle={{ gap: 6 }}
-						style={{ marginTop: 14 }}
+						style={{ marginTop: 10 }}
 					>
 						{trained.slice(0, 15).map((t) => (
 							<Chip

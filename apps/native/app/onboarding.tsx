@@ -4,6 +4,7 @@ import { BackHandler, Pressable, StyleSheet, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { fmtLength, MeasureInput } from "@/src/components/measure-input";
 import { Ruler } from "@/src/components/ruler";
 import {
 	Button,
@@ -18,11 +19,19 @@ import {
 } from "@/src/components/ui";
 import { SPLITS, splitById, trainingWeekdays } from "@/src/data/routines";
 import { cmToFtIn, kgToLb, lbToKg } from "@/src/lib/calc";
+import { todayISO } from "@/src/lib/dates";
 import { scheduleReminders } from "@/src/lib/notifications";
+import {
+	GOLDEN_RATIO,
+	goalWaistCm,
+	ratioProgress,
+	vTaperRatio,
+} from "@/src/lib/vtaper";
 import { useAuth } from "@/src/state/auth";
 import { useWorkouts } from "@/src/state/workout-store";
 import { colors, fonts, radius } from "@/src/theme";
 import type {
+	BodyMeasurement,
 	Experience,
 	Gender,
 	Goal,
@@ -31,7 +40,14 @@ import type {
 	Unit,
 } from "@/src/types";
 
-const STEPS = ["YOU", "BODY", "TRAINING", "GOALS", "REMINDERS"] as const;
+const STEPS = [
+	"YOU",
+	"BODY",
+	"SHAPE",
+	"TRAINING",
+	"GOALS",
+	"REMINDERS",
+] as const;
 const WEEK_LETTERS = ["M", "T", "W", "T", "F", "S", "S"];
 type BodyField = "age" | "height" | "weight";
 
@@ -48,14 +64,19 @@ export default function Onboarding() {
 	const [heightCm, setHeightCm] = useState(172);
 	const [weightKg, setWeightKg] = useState(70);
 	const [bodyField, setBodyField] = useState<BodyField>("weight");
-	const [split, setSplit] = useState<SplitId>("ppl");
+	const [measureNow, setMeasureNow] = useState(true);
+	const [shape, setShape] = useState<Partial<BodyMeasurement>>({
+		shouldersCm: 115,
+		waistCm: 84,
+	});
+	const [split, setSplit] = useState<SplitId>("vt_ppl");
 	const [experience, setExperience] = useState<Experience>("intermediate");
-	const [goal, setGoal] = useState<Goal>("muscle");
+	const [goal, setGoal] = useState<Goal>("both");
 	const [daysPerWeek, setDaysPerWeek] = useState(6);
 	const [reminderOn, setReminderOn] = useState(true);
 	const [hour, setHour] = useState(18);
 	const [minute, setMinute] = useState(0);
-	const [days, setDays] = useState<number[]>(trainingWeekdays("ppl"));
+	const [days, setDays] = useState<number[]>(trainingWeekdays("vt_ppl"));
 
 	const pickSplit = (id: SplitId) => {
 		setSplit(id);
@@ -90,7 +111,11 @@ export default function Onboarding() {
 		};
 		try {
 			await scheduleReminders(profile.reminder, profile.name).catch(() => {});
-			await completeOnboarding(profile, unit);
+			await completeOnboarding(
+				profile,
+				unit,
+				measureNow ? { ...shape, date: todayISO() } : undefined,
+			);
 		} finally {
 			setSaving(false);
 		}
@@ -122,7 +147,8 @@ export default function Onboarding() {
 					))}
 				</View>
 				<T variant="label" style={{ letterSpacing: 0 }}>
-					{String(step + 1).padStart(2, "0")}/05
+					{String(step + 1).padStart(2, "0")}/
+					{String(STEPS.length).padStart(2, "0")}
 				</T>
 			</View>
 
@@ -172,8 +198,8 @@ export default function Onboarding() {
 					<>
 						<Headline text="Tell us about yourself" mark="." />
 						<T style={styles.sub}>
-							Used to set starting weights and estimate calories. It never
-							leaves your phone.
+							Used to set starting weights and your goal waist. It never leaves
+							your phone.
 						</T>
 						<Row style={{ justifyContent: "space-between", marginTop: 24 }}>
 							<T variant="label">Body</T>
@@ -287,6 +313,46 @@ export default function Onboarding() {
 
 				{step === 2 && (
 					<>
+						<Headline text="Measure your V" mark="." />
+						<T style={styles.sub}>
+							Shoulders ÷ waist is the V-taper ratio. The classic aesthetic
+							target is {GOLDEN_RATIO}. Grab a tape — it takes a minute.
+						</T>
+						<View style={[styles.splitCard, { marginTop: 20 }]}>
+							<Row style={{ justifyContent: "space-between" }}>
+								<T variant="heading">I have a tape measure</T>
+								<Toggle
+									value={measureNow}
+									onChange={setMeasureNow}
+									label="Measure now"
+								/>
+							</Row>
+						</View>
+						{measureNow ? (
+							<>
+								<View style={{ marginTop: 18 }}>
+									<MeasureInput
+										fields={["shouldersCm", "waistCm"]}
+										value={shape}
+										unit={unit}
+										onChange={(field, cm) =>
+											setShape((prev) => ({ ...prev, [field]: cm }))
+										}
+									/>
+								</View>
+								<RatioPreview shape={shape} unit={unit} />
+							</>
+						) : (
+							<T variant="small" style={{ marginTop: 14 }}>
+								No problem. Add them any time from the Physique tab — your ratio
+								and goal waist show up there.
+							</T>
+						)}
+					</>
+				)}
+
+				{step === 3 && (
+					<>
 						<Headline text="How do you split your week" mark="?" />
 						<View style={{ gap: 8, marginTop: 20 }}>
 							{SPLITS.map((s) => {
@@ -364,9 +430,9 @@ export default function Onboarding() {
 					</>
 				)}
 
-				{step === 3 && (
+				{step === 4 && (
 					<>
-						<Headline text="What are you training for" mark="?" />
+						<Headline text="What does your V need most" mark="?" />
 						<View style={{ gap: 8, marginTop: 22 }}>
 							<T variant="label">Experience</T>
 							<View style={{ flexDirection: "row", gap: 8 }}>
@@ -392,10 +458,9 @@ export default function Onboarding() {
 							<View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
 								{(
 									[
-										["muscle", "Build muscle"],
-										["strength", "Get stronger"],
-										["fat_loss", "Lose fat"],
-										["general", "Stay fit"],
+										["width", "Wider shoulders & back"],
+										["waist", "Tighter waist"],
+										["both", "Both — full V-taper"],
 									] as [Goal, string][]
 								).map(([value, label]) => (
 									<Chip
@@ -425,7 +490,7 @@ export default function Onboarding() {
 					</>
 				)}
 
-				{step === 4 && (
+				{step === 5 && (
 					<>
 						<Headline text="When should we nudge you" mark="?" />
 						<T style={styles.sub}>
@@ -550,6 +615,46 @@ function Headline({ text, mark }: { text: string; mark: string }) {
 	);
 }
 
+function RatioPreview({
+	shape,
+	unit,
+}: {
+	shape: Partial<BodyMeasurement>;
+	unit: Unit;
+}) {
+	const ratio = vTaperRatio({ date: "", ...shape });
+	if (ratio === null || !shape.shouldersCm) return null;
+	const goalWaist = goalWaistCm(shape.shouldersCm);
+	const goalText = `${fmtLength(goalWaist, unit)} ${unit === "kg" ? "cm" : "in"}`;
+	return (
+		<View style={[styles.splitCard, { marginTop: 18, gap: 10 }]}>
+			<Row style={{ justifyContent: "space-between", alignItems: "flex-end" }}>
+				<View style={{ gap: 2 }}>
+					<T variant="label">Your ratio</T>
+					<T variant="mono" style={{ fontSize: 30, lineHeight: 34 }}>
+						{ratio.toFixed(2)}
+					</T>
+				</View>
+				<T variant="small" style={{ textAlign: "right" }}>
+					Target {GOLDEN_RATIO}
+					{"\n"}
+					{ratio >= GOLDEN_RATIO
+						? "You're already there"
+						: `Goal waist ${goalText}`}
+				</T>
+			</Row>
+			<View style={styles.ratioTrack}>
+				<View
+					style={[
+						styles.ratioFill,
+						{ width: `${Math.round(ratioProgress(ratio) * 100)}%` },
+					]}
+				/>
+			</View>
+		</View>
+	);
+}
+
 function BodyTile({
 	label,
 	value,
@@ -668,4 +773,11 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 	},
 	footer: { paddingHorizontal: 20, paddingBottom: 12, paddingTop: 8 },
+	ratioTrack: {
+		height: 8,
+		borderRadius: 4,
+		backgroundColor: colors.control,
+		overflow: "hidden",
+	},
+	ratioFill: { height: 8, borderRadius: 4, backgroundColor: colors.accent },
 });

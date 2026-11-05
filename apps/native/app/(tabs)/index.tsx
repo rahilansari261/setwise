@@ -12,6 +12,7 @@ import { Pressable, StyleSheet, TextInput, View } from "react-native";
 
 import { ExerciseCard } from "@/src/components/exercise-card";
 import { Button, Card, IconButton, Row, Screen, T } from "@/src/components/ui";
+import { FocusCard } from "@/src/components/vtaper";
 import { fmt, fmtDuration } from "@/src/lib/calc";
 import {
 	addDays,
@@ -228,6 +229,7 @@ export default function Today() {
 							}
 						/>
 					</Row>
+					{date === today ? <FocusCard compact /> : null}
 				</View>
 			) : (
 				<View style={{ gap: 10, marginTop: 14 }}>
