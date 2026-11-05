@@ -105,3 +105,40 @@ export function fmtDuration(totalSeconds: number): string {
 	const m = Math.floor(s / 60);
 	return `${String(m).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
+
+/** Distance follows the weight unit: kg logs kilometres, lbs logs miles. */
+export function distanceUnit(unit: Unit): "km" | "mi" {
+	return unit === "kg" ? "km" : "mi";
+}
+
+/** Converts a distance logged under one weight unit to the other (km ↔ mi), to two decimals. */
+export function convertDistance(
+	distance: number,
+	from: Unit,
+	to: Unit,
+): number {
+	if (from === to || !distance) return distance;
+	const converted = from === "lbs" ? distance * 1.609344 : distance / 1.609344;
+	return Math.round(converted * 100) / 100;
+}
+
+/** Set time as m:ss, or h:mm:ss from an hour up. */
+export function fmtSetTime(totalSeconds: number): string {
+	const s = Math.max(0, Math.floor(totalSeconds || 0));
+	const h = Math.floor(s / 3600);
+	const m = Math.floor((s % 3600) / 60);
+	const ss = String(s % 60).padStart(2, "0");
+	return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${ss}` : `${m}:${ss}`;
+}
+
+/** Parses "90", "1:30" or "1:02:03" into seconds; "" is 0. Returns null while the text isn't a valid time. */
+export function parseSetTime(input: string): number | null {
+	const trimmed = input.trim();
+	if (trimmed === "") return 0;
+	const parts = trimmed.split(":");
+	if (parts.length > 3 || parts.some((p) => !/^\d+$/.test(p))) return null;
+	return parts.reduce(
+		(total, part) => total * 60 + Number.parseInt(part, 10),
+		0,
+	);
+}

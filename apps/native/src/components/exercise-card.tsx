@@ -14,7 +14,13 @@ import { Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
 
 import { ActionSheet, T } from "@/src/components/ui";
 import { CATEGORY_COLOR } from "@/src/data/exercises";
-import { estimate1RM, fmt } from "@/src/lib/calc";
+import {
+	distanceUnit,
+	estimate1RM,
+	fmt,
+	fmtSetTime,
+	parseSetTime,
+} from "@/src/lib/calc";
 import { useRestTimerActions } from "@/src/state/rest-timer";
 import { useToast } from "@/src/state/toast";
 import {
@@ -46,20 +52,20 @@ interface Columns {
 	showE1RM: boolean;
 }
 
-function columnsFor(metric: MetricType, unit: string): Columns {
+function columnsFor(metric: MetricType, unit: Unit): Columns {
 	switch (metric) {
 		case "reps_only":
 			return { a: null, b: { label: "REPS", field: "reps" }, showE1RM: false };
 		case "time_only":
 			return {
 				a: null,
-				b: { label: "SEC", field: "timeSeconds" },
+				b: { label: "TIME", field: "timeSeconds" },
 				showE1RM: false,
 			};
 		case "distance_time":
 			return {
-				a: { label: "KM", field: "distance" },
-				b: { label: "SEC", field: "timeSeconds" },
+				a: { label: distanceUnit(unit).toUpperCase(), field: "distance" },
+				b: { label: "TIME", field: "timeSeconds" },
 				showE1RM: false,
 			};
 		default:
@@ -392,6 +398,7 @@ function SetRow({
 					completed={set.completed}
 					muted={muted}
 					integer
+					time={cols.b.field === "timeSeconds"}
 					label={`${cols.b.label} for set ${set.setNumber}`}
 				/>
 			</View>
@@ -427,13 +434,22 @@ function SetRow({
 	);
 }
 
-/** Keeps its own text while typing so "82." or an empty field don't get clobbered by re-renders. */
+function cellText(value: number, time?: boolean): string {
+	if (!value) return "";
+	return time ? fmtSetTime(value) : String(value);
+}
+
+/**
+ * Keeps its own text while typing so "82." or an empty field don't get clobbered by re-renders.
+ * With `time` the value is seconds shown as m:ss; plain seconds ("90") are accepted too.
+ */
 function NumberCell({
 	value,
 	onCommit,
 	completed,
 	muted,
 	integer,
+	time,
 	label,
 	grow,
 }: {
@@ -443,14 +459,15 @@ function NumberCell({
 	completed: boolean;
 	muted: boolean;
 	integer?: boolean;
+	time?: boolean;
 	label: string;
 }) {
-	const [text, setText] = useState(value ? String(value) : "");
+	const [text, setText] = useState(cellText(value, time));
 	const [editing, setEditing] = useState(false);
 
 	useEffect(() => {
-		if (!editing) setText(value ? String(value) : "");
-	}, [value, editing]);
+		if (!editing) setText(cellText(value, time));
+	}, [value, editing, time]);
 
 	// Logged sets show plain text and only become an input when tapped. Fewer live EditTexts keeps
 	// long workouts fast on older phones and avoids Android's text clipping on restyled inputs.
@@ -458,7 +475,7 @@ function NumberCell({
 		return (
 			<Pressable
 				accessibilityRole="button"
-				accessibilityLabel={`${label}: ${value || 0}. Tap to edit.`}
+				accessibilityLabel={`${label}: ${cellText(value, time) || 0}. Tap to edit.`}
 				onPress={() => setEditing(true)}
 				style={[styles.doneCell, grow && { flex: 1 }]}
 			>
@@ -468,7 +485,7 @@ function NumberCell({
 						{ color: muted ? colors.muted : colors.text },
 					]}
 				>
-					{value ? String(value) : "0"}
+					{cellText(value, time) || (time ? "0:00" : "0")}
 				</T>
 			</Pressable>
 		);
@@ -480,6 +497,15 @@ function NumberCell({
 			value={text}
 			autoFocus={editing}
 			onChangeText={(t) => {
+				if (time) {
+					// Android number pads have no ":", so "." or "," typed as a separator becomes one.
+					const clean = t.replace(/[.,]/g, ":");
+					setText(clean);
+					const seconds = parseSetTime(clean);
+					// "1:" mid-typing isn't a time yet; keep the last good value until it is.
+					if (seconds !== null) onCommit(seconds);
+					return;
+				}
 				const clean = t.replace(",", ".");
 				setText(clean);
 				const n = integer
@@ -489,9 +515,9 @@ function NumberCell({
 			}}
 			onFocus={() => setEditing(true)}
 			onBlur={() => setEditing(false)}
-			keyboardType={integer ? "number-pad" : "decimal-pad"}
+			keyboardType={integer && !time ? "number-pad" : "decimal-pad"}
 			selectTextOnFocus
-			placeholder="0"
+			placeholder={time ? "0:00" : "0"}
 			placeholderTextColor={colors.faint}
 			selectionColor={colors.accent}
 			maxFontSizeMultiplier={1.15}

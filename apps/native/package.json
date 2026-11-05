@@ -10,6 +10,7 @@
     "prebuild": "expo prebuild",
     "web": "expo start --web",
     "check-types": "tsc --noEmit",
+    "test": "node --test \"src/**/*.test.ts\"",
     "env:generate": "varlock codegen"
   },
   "dependencies": {

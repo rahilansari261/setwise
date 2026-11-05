@@ -12,7 +12,7 @@ import { AppState } from "react-native";
 import { DEFAULT_EXERCISES } from "@/src/data/exercises";
 import { DEFAULT_ROUTINES, splitById } from "@/src/data/routines";
 import * as db from "@/src/db/database";
-import { convertWeight, estimate1RM } from "@/src/lib/calc";
+import { convertDistance, convertWeight, estimate1RM } from "@/src/lib/calc";
 import { todayISO } from "@/src/lib/dates";
 import type {
 	ActiveRoutine,
@@ -526,6 +526,10 @@ function useWorkoutStoreValue() {
 							sets: we.sets.map((s) => ({
 								...s,
 								weight: convertWeight(s.weight, from, to),
+								distance:
+									s.distance === undefined
+										? undefined
+										: convertDistance(s.distance, from, to),
 							})),
 						})),
 					};

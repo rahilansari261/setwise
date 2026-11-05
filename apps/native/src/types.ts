@@ -33,7 +33,7 @@ export interface WorkoutSet {
 	/** In the user's current unit. */
 	weight: number;
 	reps: number;
-	/** Kilometres. */
+	/** Kilometres when the unit is kg, miles when it is lbs. */
 	distance?: number;
 	timeSeconds?: number;
 	completed: boolean;

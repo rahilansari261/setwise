@@ -2,6 +2,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
 
+import { distanceUnit } from "@/src/lib/calc";
 import { todayISO } from "@/src/lib/dates";
 import type { BackupFile } from "@/src/state/workout-store";
 import type { Unit, WorkoutDay } from "@/src/types";
@@ -41,7 +42,7 @@ export async function shareCSV(
 			"Category",
 			`Weight (${unit})`,
 			"Reps",
-			"Distance (km)",
+			`Distance (${distanceUnit(unit)})`,
 			"Time (s)",
 			"Comment",
 		],
