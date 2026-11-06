@@ -117,14 +117,14 @@ export default function SignIn() {
 					<Logo />
 				</Pressable>
 				<View style={{ gap: 12 }}>
-					<T variant="label">ADONIS · BUILD THE V</T>
+					<T variant="label">ADONIS · HYBRID ATHLETE</T>
 					<T style={styles.headline}>
 						Build{"\n"}the V
 						<T style={[styles.headline, { color: colors.accent }]}>.</T>
 					</T>
 					<T style={{ color: colors.muted, fontSize: 15, lineHeight: 22 }}>
-						Train for broad shoulders and a narrow waist. Track the ratio, watch
-						it climb. Your data stays on this phone.
+						Train like an aesthetic hybrid athlete: broad shoulders, a narrow
+						waist and an engine to match. Your data stays on this phone.
 					</T>
 				</View>
 			</View>

@@ -1,13 +1,14 @@
 import type { Routine, SplitId } from "@/src/types";
 
-// V-taper programs: lats and side delts get the most work, rear delts and upper back next, front
-// delts mostly through pressing, waist trained for tightness rather than size.
+// V-taper programs for the aesthetic hybrid athlete: lats and side delts get the most work, rear delts
+// and upper back next, front delts mostly through pressing, waist trained for tightness rather than size,
+// and a short conditioning finisher so the physique comes with an engine.
 export const DEFAULT_ROUTINES: Routine[] = [
 	{
 		id: "vt-full-body",
 		name: "V-Taper Full Body",
 		description:
-			"Three days a week for your first year. Every session hits lats and side delts.",
+			"Three days a week for your first year. Every session hits lats and side delts and ends with a short conditioning finisher.",
 		days: [
 			{
 				name: "Full Body A",
@@ -18,6 +19,7 @@ export const DEFAULT_ROUTINES: Routine[] = [
 					"dumbbell-lateral-raise",
 					"face-pull",
 					"plank",
+					"rowing-machine",
 				],
 			},
 			{
@@ -29,6 +31,7 @@ export const DEFAULT_ROUTINES: Routine[] = [
 					"cable-lateral-raise",
 					"incline-dumbbell-curl",
 					"hanging-leg-raise",
+					"stationary-bike",
 				],
 			},
 			{
@@ -40,6 +43,7 @@ export const DEFAULT_ROUTINES: Routine[] = [
 					"dumbbell-lateral-raise",
 					"reverse-pec-deck-fly",
 					"cable-rope-triceps-pushdown",
+					"jump-rope",
 				],
 			},
 		],
@@ -48,7 +52,7 @@ export const DEFAULT_ROUTINES: Routine[] = [
 		id: "vt-upper-lower",
 		name: "V-Taper Upper / Lower",
 		description:
-			"Four days. Upper A builds width, Upper B builds the shoulders; legs twice a week.",
+			"Four days. Upper A builds width, Upper B builds the shoulders; lower days finish with cardio.",
 		days: [
 			{
 				name: "Upper A · Width",
@@ -72,6 +76,7 @@ export const DEFAULT_ROUTINES: Routine[] = [
 					"lying-leg-curl",
 					"standing-calf-raise",
 					"hanging-leg-raise",
+					"rowing-machine",
 				],
 			},
 			{
@@ -96,6 +101,7 @@ export const DEFAULT_ROUTINES: Routine[] = [
 					"seated-leg-curl",
 					"standing-calf-raise",
 					"stomach-vacuum",
+					"treadmill-running",
 				],
 			},
 		],
@@ -103,7 +109,8 @@ export const DEFAULT_ROUTINES: Routine[] = [
 	{
 		id: "vt-ppl",
 		name: "V-Taper Push / Pull / Legs",
-		description: "Three or six days. Push is shoulder-led, pull is lat-led.",
+		description:
+			"Three or six days. Push is shoulder-led, pull is lat-led, legs end with conditioning.",
 		days: [
 			{
 				name: "Push",
@@ -137,6 +144,7 @@ export const DEFAULT_ROUTINES: Routine[] = [
 					"lying-leg-curl",
 					"standing-calf-raise",
 					"hanging-leg-raise",
+					"stair-climber",
 				],
 			},
 		],
@@ -176,6 +184,7 @@ export const DEFAULT_ROUTINES: Routine[] = [
 					"leg-extension",
 					"lying-leg-curl",
 					"standing-calf-raise",
+					"rowing-machine",
 				],
 			},
 			{

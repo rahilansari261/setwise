@@ -56,16 +56,16 @@ export function VTaperFigure({
 			/>
 			<Path
 				d={torso(ratio > 0 ? ratio : 1.2)}
-				fill={colors.surfaceRaised}
-				stroke={colors.lineStrong}
+				fill={colors.control}
+				stroke={colors.muted}
 				strokeWidth={1.5}
 			/>
 			<Circle
 				cx={cx}
 				cy={30}
 				r={15}
-				fill={colors.surfaceRaised}
-				stroke={colors.lineStrong}
+				fill={colors.control}
+				stroke={colors.muted}
 				strokeWidth={1.5}
 			/>
 		</Svg>

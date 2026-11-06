@@ -181,3 +181,65 @@ console.log(
 	cases.length,
 	"mapping cases + counting + status + gaps )",
 );
+
+// conditioning
+import { conditioningWeek } from "./vmuscle";
+
+const cardio = conditioningWeek(
+	{
+		"2026-11-03": {
+			date: "2026-11-03",
+			exercises: [
+				{
+					id: "r",
+					exerciseId: "treadmill-running",
+					exerciseName: "Treadmill Running",
+					category: "Cardio",
+					sets: [
+						{ completed: true, timeSeconds: 1500, distance: 5 },
+						{ completed: false, timeSeconds: 600, distance: 2 },
+					],
+				},
+				{
+					id: "b",
+					exerciseId: "x",
+					exerciseName: "Bench",
+					category: "Chest",
+					sets: [{ completed: true, timeSeconds: 60 }],
+				},
+			],
+		},
+		"2026-11-05": {
+			date: "2026-11-05",
+			exercises: [
+				{
+					id: "c",
+					exerciseId: "rowing-machine",
+					exerciseName: "Rowing",
+					category: "Cardio",
+					sets: [{ completed: true, timeSeconds: 1200 }],
+				},
+			],
+		},
+		"2026-10-01": {
+			date: "2026-10-01",
+			exercises: [
+				{
+					id: "o",
+					exerciseId: "z",
+					exerciseName: "Run",
+					category: "Cardio",
+					sets: [{ completed: true, timeSeconds: 3600 }],
+				},
+			],
+		},
+	} as never,
+	{ get: () => undefined },
+	"2026-10-31",
+);
+assert.deepEqual(
+	cardio,
+	{ sessions: 2, minutes: 45, distance: 5 },
+	"only completed cardio sets this week",
+);
+console.log("ok  conditioning");

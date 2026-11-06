@@ -141,3 +141,52 @@ export function biggestGaps(counts: Map<VGroup, number>, limit = 3) {
 		.sort((a, b) => b.missing - a.missing)
 		.slice(0, limit);
 }
+
+// ---- conditioning ---------------------------------------------------------------
+// The "hybrid" half: an aesthetic physique with an engine to match.
+
+export const CONDITIONING = {
+	minSessions: 2,
+	maxSessions: 4,
+	/** Weekly minutes to aim for; 150 is the common health guideline for moderate cardio. */
+	minMinutes: 90,
+	goalMinutes: 150,
+};
+
+export interface ConditioningWeek {
+	sessions: number;
+	minutes: number;
+	/** Kilometres or miles, in the units the sets were logged in. */
+	distance: number;
+}
+
+/** Cardio days, minutes and distance from `fromDate` on (cardio = exercises in the Cardio category). */
+export function conditioningWeek(
+	workouts: Record<string, WorkoutDay>,
+	exercises: ExerciseLookup,
+	fromDate: string,
+): ConditioningWeek {
+	let sessions = 0;
+	let seconds = 0;
+	let distance = 0;
+	for (const [date, day] of Object.entries(workouts)) {
+		if (date < fromDate) continue;
+		let cardioToday = false;
+		for (const we of day.exercises) {
+			const category = exercises.get(we.exerciseId)?.category ?? we.category;
+			if (category !== "Cardio") continue;
+			for (const s of we.sets) {
+				if (!s.completed) continue;
+				cardioToday = true;
+				seconds += s.timeSeconds ?? 0;
+				distance += s.distance ?? 0;
+			}
+		}
+		if (cardioToday) sessions++;
+	}
+	return {
+		sessions,
+		minutes: Math.round(seconds / 60),
+		distance: Math.round(distance * 10) / 10,
+	};
+}

@@ -1,13 +1,22 @@
+import { View } from "react-native";
+
 import { GroupBar } from "@/src/components/group-bar";
 import { Card, Screen, ScreenHeader, T } from "@/src/components/ui";
 import { addDays, todayISO } from "@/src/lib/dates";
 import { countsAsWork } from "@/src/lib/sets";
-import { biggestGaps, setsPerGroup, VGROUPS } from "@/src/lib/vmuscle";
+import {
+	biggestGaps,
+	CONDITIONING,
+	conditioningWeek,
+	setsPerGroup,
+	VGROUPS,
+} from "@/src/lib/vmuscle";
 import { useGroupLookup } from "@/src/state/vgroups";
 import { useWorkouts } from "@/src/state/workout-store";
+import { colors, fonts } from "@/src/theme";
 
 export default function Volume() {
-	const { workouts } = useWorkouts();
+	const { workouts, settings } = useWorkouts();
 	const lookup = useGroupLookup();
 	const counts = setsPerGroup(
 		workouts,
@@ -15,6 +24,10 @@ export default function Volume() {
 		addDays(todayISO(), -6),
 		countsAsWork,
 	);
+	const engine = conditioningWeek(workouts, lookup, addDays(todayISO(), -6));
+	const engineOk =
+		engine.sessions >= CONDITIONING.minSessions ||
+		engine.minutes >= CONDITIONING.minMinutes;
 	const gaps = biggestGaps(counts, 3);
 	const total = [...counts.values()].reduce((a, b) => a + b, 0);
 
@@ -49,6 +62,41 @@ export default function Volume() {
 					<T variant="small">Nice week. Keep it up.</T>
 				</Card>
 			)}
+
+			<Card style={{ marginTop: 12, gap: 6 }}>
+				<T variant="label">ENGINE · CARDIO THIS WEEK</T>
+				<T
+					style={{
+						fontFamily: fonts.monoBold,
+						fontSize: 22,
+						color: engineOk ? colors.accent : colors.streak,
+					}}
+				>
+					{`${engine.sessions} sessions · ${engine.minutes} min`}
+				</T>
+				<View
+					style={{
+						height: 8,
+						borderRadius: 4,
+						backgroundColor: colors.hairline,
+					}}
+				>
+					<View
+						style={{
+							width: `${Math.min(100, (engine.minutes / CONDITIONING.goalMinutes) * 100)}%`,
+							height: 8,
+							borderRadius: 4,
+							backgroundColor: engineOk ? colors.accent : colors.streak,
+						}}
+					/>
+				</View>
+				<T variant="small">
+					{`Aim for ${CONDITIONING.minSessions}–${CONDITIONING.maxSessions} sessions, building to ${CONDITIONING.goalMinutes} min. The hybrid half: a physique with an engine to match.`}
+				</T>
+				{engine.distance > 0 ? (
+					<T variant="small">{`${engine.distance} ${settings.unit === "kg" ? "km" : "mi"} covered`}</T>
+				) : null}
+			</Card>
 
 			<Card style={{ marginTop: 12, gap: 18 }}>
 				{VGROUPS.map((g) => (

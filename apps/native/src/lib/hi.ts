@@ -584,6 +584,45 @@ const H: Record<string, string> = {
 		"एक ही पोज़ के दो चेक-इन होते ही तुलना यहाँ दिखेगी।",
 	"front, side and back every 14 days. same spot, same light, same time of day — that's what makes the comparison honest. photos stay on this phone.":
 		"हर 14 दिन आगे, साइड और पीछे की फ़ोटो। वही जगह, वही रोशनी, दिन का वही समय — तभी तुलना सही होती है। फ़ोटो इसी फ़ोन में रहती हैं।",
+	// hybrid athlete · round 2
+	"adonis · hybrid athlete": "ADONIS · हाइब्रिड एथलीट",
+	"train like an aesthetic hybrid athlete: broad shoulders, a narrow waist and an engine to match. your data stays on this phone.":
+		"एस्थेटिक हाइब्रिड एथलीट की तरह ट्रेन करें: चौड़े कंधे, पतली कमर और उतना ही दमदार स्टैमिना। आपका डेटा इसी फ़ोन में रहता है।",
+	"hybrid athlete — look and perform": "हाइब्रिड एथलीट — दिखें भी, परफ़ॉर्म भी करें",
+	before: "पहले",
+	after: "बाद",
+	saved: "सेव हो गया",
+	engine: "इंजन",
+	"engine · cardio this week": "इंजन · इस हफ़्ते का कार्डियो",
+	"in practice it's a bit of both: build lats and side delts, keep the waist lean.":
+		"असल में दोनों थोड़ा-थोड़ा: लैट्स और साइड डेल्ट बनाएँ, कमर दुबली रखें।",
+	"width of the back — the 'v'": "पीठ की चौड़ाई — असली 'V'",
+	"shoulder width": "कंधों की चौड़ाई",
+	"capped, 3d shoulders": "गोल, उभरे हुए 3D कंधे",
+	"thickness and posture": "मोटाई और पॉस्चर",
+	"fills the front of the frame": "सामने से ढाँचा भरता है",
+	"biceps and triceps": "बाइसेप्स और ट्राइसेप्स",
+	"balance and hormones": "संतुलन और हार्मोन",
+	"already hit by pressing": "प्रेसिंग में पहले ही काम हो जाता है",
+	"keep the waist tight, not thick": "कमर कसी रखें, मोटी नहीं",
+	"four in a week": "हफ़्ते में चार",
+	"train on four different days in one week": "एक हफ़्ते में चार अलग दिन ट्रेन करें",
+	"hard sets in the last 7 days, against the range that builds each muscle, plus your cardio. the first four muscles are what widen your frame.":
+		"पिछले 7 दिनों के कठिन सेट, उस रेंज के मुक़ाबले जो हर मसल बनाती है, साथ में आपका कार्डियो। पहले चार मसल आपका ढाँचा चौड़ा करते हैं।",
+	"where is my data stored?": "मेरा डेटा कहाँ रहता है?",
+	"on this phone. with pro you can turn on cloud sync in settings to keep a copy in your account. progress photos always stay on the phone.":
+		"इसी फ़ोन में। Pro में आप सेटिंग्स से क्लाउड सिंक चालू करके अपने अकाउंट में भी कॉपी रख सकते हैं। प्रोग्रेस फ़ोटो हमेशा फ़ोन में ही रहती हैं।",
+	"with pro cloud sync, just sign in on the new phone. without it: settings → export backup, send the file to the new phone, then settings → import backup. photos are not included.":
+		"Pro क्लाउड सिंक है तो नए फ़ोन पर बस साइन-इन करें। नहीं तो: सेटिंग्स → बैकअप एक्सपोर्ट करें, फ़ाइल नए फ़ोन पर भेजें, फिर सेटिंग्स → बैकअप इम्पोर्ट करें। फ़ोटो इसमें शामिल नहीं होतीं।",
+	"what is the v-taper score?": "V-taper स्कोर क्या है?",
+	"your shoulder measurement divided by your waist. 1.618 is the classical ideal; wider lats and side delts raise it, a leaner waist does too.":
+		"कंधे की माप को कमर की माप से भाग दें। 1.618 क्लासिकल आदर्श है; चौड़े लैट्स और साइड डेल्ट इसे बढ़ाते हैं, दुबली कमर भी।",
+	"the ratio trend, photo check-ins, cloud sync, measurements, goals, recovery, monthly recap, unlimited routines, folders, gym profiles and the biometric lock. logging, programs, your score, weekly sets and cardio stay free.":
+		"अनुपात का ट्रेंड, फ़ोटो चेक-इन, क्लाउड सिंक, मेज़रमेंट, लक्ष्य, रिकवरी, मंथली रीकैप, अनलिमिटेड रूटीन, फ़ोल्डर, जिम प्रोफ़ाइल और बायोमेट्रिक लॉक। लॉगिंग, प्रोग्राम, आपका स्कोर, हफ़्ते के सेट और कार्डियो मुफ़्त रहते हैं।",
+	"open google play → payments & subscriptions → subscriptions → adonis, then cancel. you keep pro until the period ends.":
+		"Google Play खोलें → Payments & subscriptions → Subscriptions → Adonis, फिर रद्द करें। अवधि ख़त्म होने तक Pro बना रहता है।",
+	"rate of perceived exertion, 1–10. a set at rpe 9 left about one rep in the tank; rpe 10 was a maximum effort.":
+		"महसूस की गई मेहनत, 1–10। RPE 9 वाले सेट में लगभग एक रेप बाकी था; RPE 10 पूरी ताक़त थी।",
 	// cloud sync
 	"cloud sync": "क्लाउड सिंक",
 	"cloud sync & backup": "क्लाउड सिंक और बैकअप",
@@ -601,7 +640,6 @@ const H: Record<string, string> = {
 		"सब कुछ इसी फ़ोन में रहता है। Pro इसे आपके अकाउंट में भी सिंक कर सकता है। फ़ोन बदलने से पहले बैकअप एक्सपोर्ट करें।",
 
 	// help
-	"where is my data stored?": "मेरा डेटा कहाँ रहता है?",
 	"workouts, routines and measurements live only on this phone. export a backup from settings before switching phones.":
 		"वर्कआउट, रूटीन और मेज़रमेंट सिर्फ़ इसी फ़ोन में रहते हैं। फ़ोन बदलने से पहले सेटिंग्स से बैकअप एक्सपोर्ट करें।",
 	"how do i move to a new phone?": "नए फ़ोन में कैसे जाऊँ?",
@@ -683,6 +721,36 @@ const H: Record<string, string> = {
 
 /** Patterns for sentences with numbers or names in them. */
 export const HI_PATTERNS: [RegExp, (...m: string[]) => string][] = [
+	[
+		/^Aim for (\d+)–(\d+) sessions, building to (\d+) min\. The hybrid half: a physique with an engine to match\.$/,
+		(a, b, m) =>
+			`हफ़्ते में ${a}–${b} सेशन रखें, धीरे-धीरे ${m} मिनट तक बढ़ाएँ। हाइब्रिड वाला हिस्सा: ऐसा शरीर जिसमें स्टैमिना भी हो।`,
+	],
+	[/^(\d+) sessions · (\d+) min$/, (n, m) => `${n} सेशन · ${m} मिनट`],
+	[/^(\d+) cardio · (\d+) min$/, (n, m) => `${n} कार्डियो · ${m} मिनट`],
+	[/^(.+) (km|mi) covered$/, (d, u) => `${d} ${u} तय किए`],
+	[
+		/^Waist down (.+?) cm\s+or\s+shoulders up (.+) cm$/,
+		(w, sh) => `कमर ${w} cm घटाएँ या कंधे ${sh} cm बढ़ाएँ`,
+	],
+	[/^shoulders up (.+) cm$/, (x) => `कंधे ${x} cm बढ़ाएँ`],
+	[/^Day (\d+)$/, (n) => `दिन ${n}`],
+	[/^(\d+)h ago$/, (n) => `${n} घंटे पहले`],
+	[/^(\d+)d ago$/, (n) => `${n} दिन पहले`],
+	[/^~(\d+)h to go$/, (n) => `~${n} घंटे बाकी`],
+	[/^just now$/, () => "अभी-अभी"],
+	[/^BEST (.+)$/, (x) => `बेस्ट ${H[x.toLowerCase()] ?? x}`],
+	[/^(.+) \/ month$/, (p) => `${p} / महीना`],
+	[/^(.+) \/ year$/, (p) => `${p} / साल`],
+	[/^(.+) one time$/, (p) => `${p} एक बार`],
+	[/^6-digit code sent to (.+)$/, (e) => `${e} पर 6 अंकों का कोड भेजा गया`],
+	[
+		/^(\d+) (day|week|month)s? free trial$/i,
+		(n, u) =>
+			`${n} ${u === "day" ? "दिन" : u === "week" ? "हफ़्ते" : "महीने"} का फ़्री ट्रायल`,
+	],
+	[/^Add (\d+) exercises?$/, (n) => `${n} एक्सरसाइज़ जोड़ें`],
+	[/^Waist down (.+) cm$/, (n) => `कमर ${n} cm घटाएँ`],
 	[/^SUPERSET ([A-Z])$/i, (x) => `सुपरसेट ${x}`],
 	[/^LAST (.+)$/i, (x) => `पिछला ${x}`],
 	[/^New PR · (.+)$/i, (x) => `नया PR · ${x}`],
@@ -693,7 +761,6 @@ export const HI_PATTERNS: [RegExp, (...m: string[]) => string][] = [
 	[/^Target: (.+)$/, (x) => `मुख्य मसल: ${x}`],
 	[/^Also works: (.+)$/, (x) => `साथ में: ${x}`],
 	[/^(.+): (\d+) more sets?$/, (g, n) => `${g}: ${n} सेट और`],
-	[/^Waist down (.+) cm(.*)$/, (n, r) => `कमर ${n} cm घटाएँ${r}`],
 	[/^TO REACH (.+)$/, (n) => `${n} तक पहुँचने के लिए`],
 	[/^(\d+) days$/, (n) => `${n} दिन`],
 	[/^goal (.+)$/i, (x) => `लक्ष्य ${x}`],
@@ -710,7 +777,7 @@ export const HI_PATTERNS: [RegExp, (...m: string[]) => string][] = [
 	[/^Moved to (.+)$/, (d) => `${d} पर ले जाया गया`],
 	[/^Scheduled for (.+)$/, (d) => `${d} के लिए शेड्यूल हुआ`],
 	[/^Switch to (kg|lbs)\?$/, (u) => `${u} में बदलें?`],
-	[/^Set (\d+)$/, (n) => `सेट ${n}`],
+	[/^Set (\d+)$/i, (n) => `सेट ${n}`],
 	[/^Delete set (\d+)\?$/, (n) => `सेट ${n} हटाएँ?`],
 	[
 		/^(\d+)\/(\d+) custom routines on the free plan\.$/,
@@ -721,7 +788,6 @@ export const HI_PATTERNS: [RegExp, (...m: string[]) => string][] = [
 		/^(\d+) working sets in this period, split by rep range\.$/,
 		(n) => `इस अवधि में ${n} वर्किंग सेट, रेप रेंज के हिसाब से बँटे हुए।`,
 	],
-	[/^(\d+) sets? · (.+)$/, (n, rest) => `${n} सेट · ${rest}`],
 	[/^Next: (.+) at (.+)$/, (lvl, w) => `अगला: ${lvl} पर ${w}`],
 	[/^Log (\d+) workouts?$/, (n) => `${n} वर्कआउट लॉग करें`],
 	[/^(\d+) workouts?$/, (n) => `${n} वर्कआउट`],

@@ -20,7 +20,12 @@ import { fmt } from "@/src/lib/calc";
 import { addDays, shortDate, todayISO } from "@/src/lib/dates";
 import type { ProFeature } from "@/src/lib/pro";
 import { countsAsWork } from "@/src/lib/sets";
-import { setsPerGroup, VGROUPS } from "@/src/lib/vmuscle";
+import {
+	CONDITIONING,
+	conditioningWeek,
+	setsPerGroup,
+	VGROUPS,
+} from "@/src/lib/vmuscle";
 import {
 	IDEAL_RATIO,
 	progressToIdeal,
@@ -77,6 +82,10 @@ export default function Progress() {
 	const { workouts, personalRecords, settings } = useWorkouts();
 	const { measurements } = useExtras();
 	const lookup = useGroupLookup();
+	const engine = useMemo(
+		() => conditioningWeek(workouts, lookup, addDays(todayISO(), -6)),
+		[workouts, lookup],
+	);
 	const weekSets = useMemo(
 		() => setsPerGroup(workouts, lookup, addDays(todayISO(), -6), countsAsWork),
 		[workouts, lookup],
@@ -236,6 +245,26 @@ export default function Progress() {
 							/>
 						))}
 					</View>
+					<Pressable
+						accessibilityRole="button"
+						onPress={() => router.push("/volume")}
+						style={styles.engine}
+					>
+						<T variant="label" style={{ flex: 1 }}>
+							ENGINE
+						</T>
+						<T
+							style={{
+								fontFamily: fonts.monoBold,
+								color:
+									engine.sessions >= CONDITIONING.minSessions
+										? colors.accent
+										: colors.streak,
+							}}
+						>
+							{`${engine.sessions} cardio · ${engine.minutes} min`}
+						</T>
+					</Pressable>
 
 					<T variant="label" style={{ marginTop: 28 }}>
 						RECORDS · BEST e1RM
@@ -275,6 +304,17 @@ export default function Progress() {
 }
 
 const styles = StyleSheet.create({
+	engine: {
+		flexDirection: "row",
+		alignItems: "center",
+		marginTop: 16,
+		paddingVertical: 12,
+		paddingHorizontal: 14,
+		borderRadius: 14,
+		borderWidth: 1,
+		borderColor: colors.hairline,
+		backgroundColor: colors.surface,
+	},
 	vt: {
 		flexDirection: "row",
 		alignItems: "center",

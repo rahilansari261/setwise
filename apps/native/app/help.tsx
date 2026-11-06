@@ -10,15 +10,19 @@ import { fonts } from "@/src/theme";
 const FAQ = [
 	{
 		q: "Where is my data stored?",
-		a: "Workouts, routines and measurements live only on this phone. Export a backup from Settings before switching phones.",
+		a: "On this phone. With Pro you can turn on cloud sync in Settings to keep a copy in your account. Progress photos always stay on the phone.",
 	},
 	{
 		q: "How do I move to a new phone?",
-		a: "Settings → Export backup, send the file to the new phone, then Settings → Import backup. Progress photos are not included in backups.",
+		a: "With Pro cloud sync, just sign in on the new phone. Without it: Settings → Export backup, send the file to the new phone, then Settings → Import backup. Photos are not included.",
+	},
+	{
+		q: "What is the V-taper score?",
+		a: "Your shoulder measurement divided by your waist. 1.618 is the classical ideal; wider lats and side delts raise it, a leaner waist does too.",
 	},
 	{
 		q: "What does Pro include?",
-		a: "Analytics (strength ranking, recovery, zones, recap), measurements, photos, goals, folders, gym profiles and biometric lock. Logging stays free.",
+		a: "The ratio trend, photo check-ins, cloud sync, measurements, goals, recovery, monthly recap, unlimited routines, folders, gym profiles and the biometric lock. Logging, programs, your score, weekly sets and cardio stay free.",
 	},
 	{
 		q: "How do I cancel Pro?",

@@ -491,7 +491,7 @@ export default function Onboarding() {
 									[
 										["muscle", "Build the V — add size"],
 										["fat_loss", "Cut the waist"],
-										["general", "Both — recomp"],
+										["general", "Hybrid athlete — look and perform"],
 									] as [Goal, string][]
 								).map(([value, label]) => (
 									<Chip
