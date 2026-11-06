@@ -61,9 +61,64 @@ for (const [
 	});
 }
 
+/**
+ * Hand-written defaults whose names differ from the library's, matched by hand so they get
+ * how-to steps and target muscles too ("Lat Pulldown" is the library's "Cable Pulldown").
+ */
+const ALIASES: Record<string, string> = {
+	"incline-barbell-bench-press": "0047",
+	"flat-dumbbell-bench-press": "0289",
+	"incline-dumbbell-bench-press": "0314",
+	"decline-barbell-bench-press": "0033",
+	"chest-dips": "0251",
+	"cable-crossover": "0155",
+	"dumbbell-flyes": "0308",
+	"pec-deck-machine": "0596",
+	"conventional-deadlift": "0032",
+	"lat-pulldown": "0198",
+	"seated-cable-row": "0861",
+	"t-bar-row": "0606",
+	"single-arm-dumbbell-row": "0292",
+	"romanian-deadlift": "0085",
+	"back-hyperextensions": "0489",
+	"barbell-back-squat": "0043",
+	"leg-press": "0739",
+	"bulgarian-split-squat": "0410",
+	"leg-extension": "0585",
+	"lying-leg-curl": "0586",
+	"seated-leg-curl": "0599",
+	"standing-calf-raise": "1372",
+	"seated-calf-raise": "0594",
+	"walking-lunges": "1460",
+	"hack-squat": "0743",
+	"hip-thrust": "3562",
+	"overhead-press": "1456",
+	"dumbbell-shoulder-press": "0405",
+	"face-pull": "0233",
+	"arnold-press": "2137",
+	"reverse-pec-deck-fly": "0602",
+	"barbell-bicep-curl": "0031",
+	"incline-dumbbell-curl": "0318",
+	"preacher-curl": "0070",
+	"cable-rope-triceps-pushdown": "0200",
+	"skull-crusher": "0060",
+	"close-grip-bench-press": "0030",
+	"concentration-curl": "0297",
+	"overhead-triceps-extension": "0430",
+	plank: "2135",
+	"ab-wheel-rollout": "0857",
+	"treadmill-running": "0685",
+	"stationary-bike": "2138",
+	"stair-climber": "2311",
+};
+
 /** Library id for any exercise (custom exercises have none). */
 export function libraryIdOf(exercise: Pick<Exercise, "id" | "libraryId">) {
-	return exercise.libraryId ?? libraryIdByExerciseId.get(exercise.id);
+	return (
+		exercise.libraryId ??
+		libraryIdByExerciseId.get(exercise.id) ??
+		ALIASES[exercise.id]
+	);
 }
 
 export function libraryInfo(libraryId: string) {

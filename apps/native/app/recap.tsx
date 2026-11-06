@@ -4,7 +4,7 @@ import { View } from "react-native";
 
 import { ProScreen } from "@/src/components/pro-screen";
 import { Card, IconButton, Row, T } from "@/src/components/ui";
-import { fmt, kgToLb } from "@/src/lib/calc";
+import { fmt, kgToLb, plural } from "@/src/lib/calc";
 import { monthName, shortDate, todayISO } from "@/src/lib/dates";
 import { monthKey, monthRecap, shiftMonth } from "@/src/lib/insights";
 import { useWorkouts } from "@/src/state/workout-store";
@@ -113,7 +113,7 @@ export default function Recap() {
 								<T style={{ fontFamily: fonts.bodyMedium }}>
 									{cur.topExercise.name}
 								</T>{" "}
-								({cur.topExercise.sets} sets)
+								({plural(cur.topExercise.sets, "set")})
 							</T>
 						) : null}
 						{cur.topCategory ? (
@@ -124,7 +124,7 @@ export default function Recap() {
 								</T>
 							</T>
 						) : null}
-						{cur.bestDay ? (
+						{cur.bestDay && cur.bestDay.volumeKg > 0 ? (
 							<T>
 								Biggest day:{" "}
 								<T style={{ fontFamily: fonts.bodyMedium }}>

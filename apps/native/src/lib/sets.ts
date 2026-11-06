@@ -216,6 +216,7 @@ export function equipmentOf(
 
 export const ACTIVITY_TYPES = [
 	"Strength training",
+	"Hybrid training",
 	"Hypertrophy",
 	"Powerlifting",
 	"Bodybuilding",

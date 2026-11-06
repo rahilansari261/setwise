@@ -149,6 +149,7 @@ export function monthRecap(
 		let dayVol = 0;
 		let first = Number.POSITIVE_INFINITY;
 		let last = 0;
+		let timedSeconds = 0;
 		for (const we of day.exercises)
 			for (const s of we.sets) {
 				if (!s.completed) continue;
@@ -156,6 +157,7 @@ export function monthRecap(
 					first = Math.min(first, s.completedAt);
 					last = Math.max(last, s.completedAt);
 				}
+				timedSeconds += s.timeSeconds ?? 0;
 				if (!countsAsWork(s)) continue;
 				out.sets++;
 				dayVol += toKg(setVolume(s, we.dumbbellMode), unit);
@@ -167,9 +169,11 @@ export function monthRecap(
 				byCategory.set(we.category, (byCategory.get(we.category) ?? 0) + 1);
 			}
 		out.volumeKg += dayVol;
+		// Lifting sessions are timed from first to last logged set; cardio and holds count their own time.
+		const spanMinutes = last > first ? Math.round((last - first) / 60000) : 0;
 		out.minutes +=
 			day.finished?.durationMin ??
-			(last > first ? Math.round((last - first) / 60000) : 0);
+			Math.max(spanMinutes, Math.round(timedSeconds / 60));
 		if (!out.bestDay || dayVol > out.bestDay.volumeKg)
 			out.bestDay = { date, volumeKg: dayVol };
 	}

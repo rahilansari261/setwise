@@ -1,6 +1,6 @@
-import { getLocale } from "@/src/lib/i18n";
-
-const MONTHS_EN = [
+// Dates are always built in English; on screen, T translates the weekday and month names
+// (see dateWords in src/lib/translate.ts), so memoised components update when the language changes.
+const MONTHS = [
 	"Jan",
 	"Feb",
 	"Mar",
@@ -14,24 +14,7 @@ const MONTHS_EN = [
 	"Nov",
 	"Dec",
 ];
-const WEEKDAYS_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const MONTHS_HI = [
-	"जन॰",
-	"फ़र॰",
-	"मार्च",
-	"अप्रै॰",
-	"मई",
-	"जून",
-	"जुला॰",
-	"अग॰",
-	"सित॰",
-	"अक्टू॰",
-	"नव॰",
-	"दिस॰",
-];
-const WEEKDAYS_HI = ["रवि", "सोम", "मंगल", "बुध", "गुरु", "शुक्र", "शनि"];
-const MONTHS = () => (getLocale() === "hi" ? MONTHS_HI : MONTHS_EN);
-const WEEKDAYS = () => (getLocale() === "hi" ? WEEKDAYS_HI : WEEKDAYS_EN);
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export function toISO(date: Date): string {
 	const y = date.getFullYear();
@@ -61,11 +44,11 @@ export function startOfWeek(iso: string): string {
 }
 
 export function monthName(monthIndex: number): string {
-	return MONTHS()[monthIndex] ?? "";
+	return MONTHS[monthIndex] ?? "";
 }
 
 export function weekdayShort(dayIndex: number): string {
-	return WEEKDAYS()[dayIndex] ?? "";
+	return WEEKDAYS[dayIndex] ?? "";
 }
 
 /** "THU 16 OCT" */

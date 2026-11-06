@@ -623,6 +623,22 @@ const H: Record<string, string> = {
 		"Google Play खोलें → Payments & subscriptions → Subscriptions → Adonis, फिर रद्द करें। अवधि ख़त्म होने तक Pro बना रहता है।",
 	"rate of perceived exertion, 1–10. a set at rpe 9 left about one rep in the tank; rpe 10 was a maximum effort.":
 		"महसूस की गई मेहनत, 1–10। RPE 9 वाले सेट में लगभग एक रेप बाकी था; RPE 10 पूरी ताक़त थी।",
+	"most trained:": "सबसे ज़्यादा ट्रेन:",
+	"focus muscle:": "फ़ोकस मसल:",
+	"biggest day:": "सबसे बड़ा दिन:",
+	"logging, v-taper programs, your shoulder-to-waist score, weekly sets, cardio, calculators and backups stay free forever.":
+		"लॉगिंग, V-taper प्रोग्राम, आपका कंधे-कमर स्कोर, हफ़्ते के सेट, कार्डियो, कैलकुलेटर और बैकअप हमेशा मुफ़्त रहेंगे।",
+	rear: "पीछे",
+	min: "मिनट",
+	"hybrid training": "हाइब्रिड ट्रेनिंग",
+	// charts
+	distance: "दूरी",
+	"longest distance": "सबसे लंबी दूरी",
+	"longest set": "सबसे लंबा सेट",
+	"most reps in a set": "एक सेट में सबसे ज़्यादा रेप",
+	"best distance": "बेस्ट दूरी",
+	"best time": "बेस्ट समय",
+	"best reps": "बेस्ट रेप्स",
 	// cloud sync
 	"cloud sync": "क्लाउड सिंक",
 	"cloud sync & backup": "क्लाउड सिंक और बैकअप",
@@ -721,6 +737,8 @@ const H: Record<string, string> = {
 
 /** Patterns for sentences with numbers or names in them. */
 export const HI_PATTERNS: [RegExp, (...m: string[]) => string][] = [
+	[/^(\d+) sets?$/, (n) => `${n} सेट`],
+	[/^(\d+) sessions? · (\d+) min$/, (n, m) => `${n} सेशन · ${m} मिनट`],
 	[
 		/^Aim for (\d+)–(\d+) sessions, building to (\d+) min\. The hybrid half: a physique with an engine to match\.$/,
 		(a, b, m) =>

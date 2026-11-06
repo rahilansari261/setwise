@@ -166,7 +166,7 @@ export default function Progress() {
 			</Pressable>
 
 			<View style={styles.tiles}>
-				{TILES.map((t) => {
+				{TILES.map((t, i) => {
 					const Icon = t.icon;
 					return (
 						<Pressable
@@ -180,6 +180,8 @@ export default function Progress() {
 							}
 							style={({ pressed }) => [
 								styles.tile,
+								// Seven tiles: the first spans the row so the rest pair up evenly.
+								i === 0 && { width: "100%" },
 								pressed && { opacity: 0.7 },
 							]}
 						>

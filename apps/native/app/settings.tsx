@@ -279,7 +279,10 @@ export default function SettingsScreen() {
 			<Section title={t("Training")}>
 				<ListRow
 					label="Split"
-					detail={splitById(profile.split).name}
+					detail={
+						store.routines.find((r) => r.id === store.activeRoutine?.routineId)
+							?.name ?? splitById(profile.split).name
+					}
 					onPress={() => router.push("/routines")}
 				>
 					<T variant="label" style={{ color: colors.accent }}>

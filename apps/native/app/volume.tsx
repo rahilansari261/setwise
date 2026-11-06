@@ -2,6 +2,7 @@ import { View } from "react-native";
 
 import { GroupBar } from "@/src/components/group-bar";
 import { Card, Screen, ScreenHeader, T } from "@/src/components/ui";
+import { plural } from "@/src/lib/calc";
 import { addDays, todayISO } from "@/src/lib/dates";
 import { countsAsWork } from "@/src/lib/sets";
 import {
@@ -72,7 +73,7 @@ export default function Volume() {
 						color: engineOk ? colors.accent : colors.streak,
 					}}
 				>
-					{`${engine.sessions} sessions · ${engine.minutes} min`}
+					{`${plural(engine.sessions, "session")} · ${engine.minutes} min`}
 				</T>
 				<View
 					style={{

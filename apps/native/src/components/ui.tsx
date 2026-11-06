@@ -391,12 +391,15 @@ export function Chip({
 	onPress,
 	style,
 	mono,
+	raw,
 }: {
 	label: string;
 	selected?: boolean;
 	onPress?: () => void;
 	style?: StyleProp<ViewStyle>;
 	mono?: boolean;
+	/** Show the label as is, untranslated (muscle names stay English). */
+	raw?: boolean;
 }) {
 	const tr = useTr();
 	return (
@@ -429,7 +432,7 @@ export function Chip({
 					color: selected ? colors.text : colors.textSoft,
 				}}
 			>
-				{tr(label)}
+				{raw ? label : tr(label)}
 			</Text>
 		</Pressable>
 	);

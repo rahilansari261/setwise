@@ -299,7 +299,9 @@ function useWorkoutStoreValue() {
 				const last = lastPerformance(exerciseId, date);
 				const working = last?.sets.filter((s) => countsAsWork(s)) ?? [];
 				const template = working.at(-1) ?? last?.sets.at(-1);
-				const count = Math.max(setsPerExercise, 1);
+				// A cardio finisher is one effort, not three sets.
+				const count =
+					exercise.category === "Cardio" ? 1 : Math.max(setsPerExercise, 1);
 				added.push({
 					id: newId("we"),
 					exerciseId,

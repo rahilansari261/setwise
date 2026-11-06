@@ -15,7 +15,8 @@ export const POSES: { pose: Pose; name: string; tip: string }[] = [
 	},
 	{
 		pose: "back",
-		name: "Back",
+		// "Rear" rather than "Back" so it isn't mistaken for the Back muscle group (and translates cleanly).
+		name: "Rear",
 		tip: "Back to the camera, spread your lats, arms slightly out.",
 	},
 ];

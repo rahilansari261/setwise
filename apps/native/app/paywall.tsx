@@ -121,8 +121,8 @@ export default function Paywall() {
 				))}
 			</Card>
 			<T variant="small" style={{ marginTop: 10 }}>
-				Logging, rest timer, calculators, records, calendar and backups stay
-				free forever.
+				Logging, V-taper programs, your shoulder-to-waist score, weekly sets,
+				cardio, calculators and backups stay free forever.
 			</T>
 
 			<T variant="label" style={{ marginTop: 24 }}>

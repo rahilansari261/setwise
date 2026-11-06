@@ -2,6 +2,7 @@ import { View } from "react-native";
 
 import { ProScreen } from "@/src/components/pro-screen";
 import { Card, Row, T } from "@/src/components/ui";
+import { plural } from "@/src/lib/calc";
 import { muscleRecovery } from "@/src/lib/insights";
 import { useGroupLookup } from "@/src/state/vgroups";
 import { useWorkouts } from "@/src/state/workout-store";
@@ -82,7 +83,7 @@ export default function Recovery() {
 						<T variant="small" style={{ marginTop: 8 }}>
 							{m.hoursSince === undefined
 								? "Not trained yet"
-								: `${m.sets} sets · ${ago(m.hoursSince)}${
+								: `${plural(m.sets, "set")} · ${ago(m.hoursSince)}${
 										m.recovered < 1
 											? ` · ~${Math.max(1, Math.round(m.needHours - m.hoursSince))}h to go`
 											: ""

@@ -37,6 +37,13 @@ const METRICS: { value: MetricType; label: string }[] = [
 	{ value: "distance_time", label: "Distance + time" },
 ];
 
+/** Lower is better: name starts with the query, then a word does, then a V-taper pick, then the rest. */
+function searchRank(e: Exercise, q: string): number {
+	const name = e.name.toLowerCase();
+	const base = name.startsWith(q) ? 0 : name.includes(` ${q}`) ? 2 : 4;
+	return base + (PICK_ORDER.has(e.id) || e.isCustom ? 0 : 1);
+}
+
 export function ExerciseList({
 	selected,
 	onPress,
@@ -91,6 +98,7 @@ export function ExerciseList({
 					(picksOnly
 						? (PICK_ORDER.get(a.id) ?? 999) - (PICK_ORDER.get(b.id) ?? 999)
 						: 0) ||
+					(q ? searchRank(a, q) - searchRank(b, q) : 0) ||
 					Number(favorites.has(b.id)) - Number(favorites.has(a.id)) ||
 					Number(Boolean(b.isCustom)) - Number(Boolean(a.isCustom)) ||
 					a.name.localeCompare(b.name),
@@ -142,6 +150,7 @@ export function ExerciseList({
 								<Chip
 									key={c}
 									label={c}
+									raw={c !== "All"}
 									selected={category === c}
 									onPress={() => setCategory(c)}
 									style={{ minHeight: 38 }}
@@ -436,6 +445,7 @@ export function CreateExerciseSheet({
 							<Chip
 								key={c}
 								label={c}
+								raw
 								selected={category === c}
 								onPress={() => setCategory(c)}
 								style={{ minHeight: 38 }}

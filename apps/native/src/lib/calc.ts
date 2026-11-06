@@ -178,3 +178,7 @@ export function parseSetTime(input: string): number | null {
 		0,
 	);
 }
+
+/** "1 set", "3 sets". */
+export const plural = (n: number, one: string, many = `${one}s`) =>
+	`${n} ${n === 1 ? one : many}`;
