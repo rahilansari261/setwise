@@ -160,7 +160,6 @@ button:focus-visible {
 
 @media (prefers-reduced-motion: no-preference) {
 	.rise {
-		display: inline-block;
 		animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 		animation-delay: calc(var(--i, 0) * 90ms + 80ms);
 	}
@@ -194,6 +193,7 @@ button:focus-visible {
 	.shimmer {
 		animation: shimmer 4s linear infinite;
 	}
+	/* Leaves sit inside a rotated <g>; only the ellipse scales, so the rotation stays intact. */
 	.mark-anim ellipse {
 		transform-box: fill-box;
 		transform-origin: center;

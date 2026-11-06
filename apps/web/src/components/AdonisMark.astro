@@ -48,15 +48,16 @@ const branches = wreath ? [branch(1), branch(-1)] : [];
 			<g>
 				<path d={b.stem} stroke={color} stroke-width="9" fill="none" />
 				{b.leaves.map((l, i) => (
-					<ellipse
-						style={`--i:${i}`}
-						cx={l.x.toFixed(1)}
-						cy={l.y.toFixed(1)}
-						rx={(l.l / 2).toFixed(1)}
-						ry={(l.w / 2).toFixed(1)}
-						fill={color}
-						transform={`rotate(${l.rot.toFixed(1)} ${l.x.toFixed(1)} ${l.y.toFixed(1)})`}
-					/>
+					<g transform={`rotate(${l.rot.toFixed(1)} ${l.x.toFixed(1)} ${l.y.toFixed(1)})`}>
+						<ellipse
+							style={`--i:${i}`}
+							cx={l.x.toFixed(1)}
+							cy={l.y.toFixed(1)}
+							rx={(l.l / 2).toFixed(1)}
+							ry={(l.w / 2).toFixed(1)}
+							fill={color}
+						/>
+					</g>
 				))}
 			</g>
 		))
