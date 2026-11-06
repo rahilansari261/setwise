@@ -10,7 +10,6 @@ import {
 } from "@/src/lib/vmuscle";
 import type {
 	Category,
-	Gender,
 	Measurement,
 	TargetGoal,
 	Unit,

@@ -2,7 +2,7 @@ import * as Haptics from "expo-haptics";
 import * as WebBrowser from "expo-web-browser";
 import { useRef, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
-import Svg, { Path, Rect } from "react-native-svg";
+import Svg, { Path } from "react-native-svg";
 
 import { AdonisMark } from "@/src/components/adonis-mark";
 import { Button, Field, Screen, T } from "@/src/components/ui";

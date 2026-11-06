@@ -55,7 +55,7 @@ const METRIC_CHIP: Record<ProgressMetric, string> = {
 	distance: "Distance",
 };
 
-function formatMetric(value: number, metric: ProgressMetric, unit: Unit) {
+function formatMetric(value: number, metric: ProgressMetric, _unit: Unit) {
 	const sign = value < 0 ? "−" : "";
 	const v = Math.abs(value);
 	if (metric === "time") return `${sign}${fmtSetTime(v)}`;

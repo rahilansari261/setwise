@@ -16,12 +16,10 @@ import { ExerciseProgress } from "@/src/components/exercise-progress";
 import { GroupBar } from "@/src/components/group-bar";
 import { Chip, ProBadge, Screen, T } from "@/src/components/ui";
 import { VTaperFigure } from "@/src/components/vtaper-figure";
-import { CATEGORY_COLOR } from "@/src/data/exercises";
 import { fmt } from "@/src/lib/calc";
 import { addDays, shortDate, todayISO } from "@/src/lib/dates";
 import type { ProFeature } from "@/src/lib/pro";
 import { countsAsWork } from "@/src/lib/sets";
-import { setsByCategory } from "@/src/lib/stats";
 import { setsPerGroup, VGROUPS } from "@/src/lib/vmuscle";
 import {
 	IDEAL_RATIO,
