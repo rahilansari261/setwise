@@ -1,33 +1,39 @@
 ---
 import AdonisMark from "../components/AdonisMark.astro";
 import Layout from "../layouts/Layout.astro";
+import { IDEAL, STAGES, torso } from "../lib/vtaper";
 import { APP_NAME, PLAY_STORE_URL } from "../site.config";
-
-// Torso outline used by the app's V-taper card (apps/native/src/components/vtaper-figure.tsx).
-function torso(ratio: number) {
-	const cx = 110;
-	const waist = 64;
-	const s = Math.min(96, (waist * ratio) / 2);
-	const w = waist / 2;
-	const hip = w + 6;
-	return [
-		`M ${cx - s} 52`,
-		`Q ${cx - s - 4} 64 ${cx - s + 10} 80`,
-		`C ${cx - w - 10} 108 ${cx - w - 2} 130 ${cx - w} 146`,
-		`L ${cx - hip} 190`,
-		`L ${cx + hip} 190`,
-		`L ${cx + w} 146`,
-		`C ${cx + w + 2} 130 ${cx + w + 10} 108 ${cx + s - 10} 80`,
-		`Q ${cx + s + 4} 64 ${cx + s} 52`,
-		`Q ${cx} 40 ${cx - s} 52 Z`,
-	].join(" ");
-}
 
 const weekly = [
 	{ group: "Lats", sets: 14, min: 12, max: 20 },
 	{ group: "Side delts", sets: 9, min: 12, max: 20 },
 	{ group: "Rear delts", sets: 8, min: 8, max: 14 },
 	{ group: "Upper back", sets: 10, min: 8, max: 14 },
+];
+
+const moves = [
+	"Pull-up",
+	"Lean-away lateral raise",
+	"Face pull",
+	"Lat pulldown",
+	"Incline dumbbell press",
+	"Rowing intervals",
+	"Reverse pec deck",
+	"Chest-supported row",
+	"Straight-arm pulldown",
+	"5 km run",
+	"Hanging leg raise",
+	"Stomach vacuum",
+];
+const movesB = [
+	"Lats 12–20 sets",
+	"Side delts 12–20 sets",
+	"Rear delts 8–14 sets",
+	"Cardio 2–4 sessions",
+	"Goal 1.618",
+	"Check-in every 14 days",
+	"Waist tight, not thick",
+	"150 min engine",
 ];
 
 const steps = [
@@ -92,39 +98,49 @@ const pro = [
 ---
 
 <Layout>
-	<main>
-		<section class="mx-auto grid max-w-5xl items-center gap-14 px-4 pt-10 sm:px-6 md:grid-cols-[1.1fr_0.9fr] md:pt-16">
-			<div>
-				<p class="label">Aesthetic hybrid athlete · Android</p>
-				<h1 class="mt-4 font-display text-[44px] font-semibold leading-[1.02] tracking-tight sm:text-6xl">
-					Build<br />the V<span class="text-volt">.</span>
+	<main class="overflow-x-clip">
+		<!-- Hero: the thesis, then the app proving it -->
+		<section class="relative mx-auto grid max-w-5xl items-center gap-14 px-4 pt-10 sm:px-6 md:grid-cols-[1.1fr_0.9fr] md:pt-16">
+			<div class="relative">
+				<p class="label rise" style="--i:0">Aesthetic hybrid athlete · Android</p>
+				<h1 class="mt-4 font-display text-[52px] font-semibold leading-[0.98] tracking-tight sm:text-7xl">
+					<span class="rise" style="--i:1">Build</span>
+					<br />
+					<span class="rise" style="--i:2">the&nbsp;V</span><span class="pulse-dot text-volt">.</span>
 				</h1>
-				<p class="mt-5 max-w-md text-lg leading-relaxed text-soft">
+				<p class="rise mt-6 max-w-md text-lg leading-relaxed text-soft" style="--i:3">
 					{APP_NAME} is the training app for the aesthetic hybrid athlete: broad shoulders, a narrow waist and an
 					engine to match. Measure your ratio, train the muscles that widen your frame, keep your cardio honest,
 					and watch the V take shape — week by week.
 				</p>
-				<div class="mt-8 flex flex-wrap items-center gap-4">
+				<div class="rise mt-8 flex flex-wrap items-center gap-4" style="--i:4">
 					{
 						PLAY_STORE_URL ? (
 							<a
 								href={PLAY_STORE_URL}
-								class="inline-flex h-14 items-center gap-3 rounded-2xl bg-volt px-6 font-display text-lg font-semibold text-ink hover:brightness-95"
+								class="btn-shine inline-flex h-14 items-center gap-3 rounded-2xl bg-volt px-6 font-display text-lg font-semibold text-ink"
 							>
 								Get it on Google Play
 							</a>
 						) : (
-							<span class="inline-flex h-14 items-center gap-3 rounded-2xl border border-line px-6 font-display text-lg font-semibold text-soft">
-								Coming soon to Google Play
-							</span>
+							<a
+								href="#calc"
+								class="btn-shine inline-flex h-14 items-center gap-3 rounded-2xl bg-volt px-6 font-display text-lg font-semibold text-ink"
+							>
+								Check your ratio
+								<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+							</a>
 						)
 					}
-					<p class="font-mono text-xs uppercase tracking-[0.14em] text-muted">Free to start · No ads</p>
+					<p class="font-mono text-xs uppercase tracking-[0.14em] text-muted">
+						{PLAY_STORE_URL ? "Free to start · No ads" : "Coming soon to Google Play"}
+					</p>
 				</div>
 			</div>
 
-			<div class="mx-auto w-full max-w-[320px]" aria-hidden="true">
-				<div class="rounded-[38px] border border-line bg-ink p-3 shadow-[0_40px_120px_-40px_rgba(198,255,61,0.18)]">
+			<div class="relative mx-auto w-full max-w-[320px]" aria-hidden="true">
+				<div class="orb pointer-events-none absolute -inset-10 -z-10 rounded-full bg-[radial-gradient(closest-side,rgba(198,255,61,0.22),transparent)] blur-2xl"></div>
+				<div class="tilt rounded-[38px] border border-line bg-ink p-3 shadow-[0_40px_120px_-40px_rgba(198,255,61,0.28)]">
 					<div class="rounded-[28px] bg-ink px-3 pb-4 pt-5">
 						<p class="px-1 font-mono text-[10px] tracking-[0.14em] text-muted">PROGRESS</p>
 						<p class="px-1 font-display text-2xl font-semibold tracking-tight">Your lifts</p>
@@ -132,15 +148,15 @@ const pro = [
 						<div class="mt-3 flex items-center gap-3 rounded-2xl border-[1.5px] border-volt bg-surface p-3">
 							<div class="flex-1">
 								<p class="font-mono text-[9px] tracking-[0.14em] text-muted">V-TAPER</p>
-								<p class="font-mono text-3xl font-bold leading-9">1.48</p>
+								<p class="font-mono text-3xl font-bold leading-9" data-count-from="1.30" data-decimals="2">1.48</p>
 								<p class="text-[11px] text-muted">V-taper · goal 1.618 · +0.03</p>
-								<div class="mt-2 h-1.5 rounded-full bg-raised">
-									<div class="h-1.5 w-[67%] rounded-full bg-volt"></div>
+								<div class="mt-2 h-1.5 overflow-hidden rounded-full bg-raised">
+									<div class="bar-grow h-1.5 w-[67%] rounded-full bg-volt"></div>
 								</div>
 							</div>
 							<svg width="86" height="78" viewBox="0 0 220 200">
-								<path d={torso(1.618)} fill="none" stroke="#C6FF3D" stroke-width="2" stroke-dasharray="5 4"></path>
-								<path d={torso(1.48)} fill="#2A2F38" stroke="#8A919E" stroke-width="2"></path>
+								<path d={torso(IDEAL)} fill="none" stroke="#C6FF3D" stroke-width="2" stroke-dasharray="5 4"></path>
+								<path d={torso(1.48)} data-morph-from="1.2" data-morph-to="1.48" fill="#2A2F38" stroke="#8A919E" stroke-width="2"></path>
 								<circle cx="110" cy="30" r="15" fill="#2A2F38" stroke="#8A919E" stroke-width="2"></circle>
 							</svg>
 						</div>
@@ -148,14 +164,14 @@ const pro = [
 						<p class="mt-4 px-1 font-mono text-[9px] tracking-[0.14em] text-muted">THIS WEEK · SETS PER MUSCLE ›</p>
 						<div class="mt-2 space-y-3 px-1">
 							{
-								weekly.map((g) => {
+								weekly.map((g, i) => {
 									const scale = g.max + 4;
 									const low = g.sets < g.min;
 									return (
 										<div>
 											<div class="flex items-baseline gap-2 text-[13px]">
 												<span class="flex-1 font-medium">{g.group}</span>
-												<span class={`font-mono font-bold ${low ? "text-ember" : "text-volt"}`}>{g.sets}</span>
+												<span class={`font-mono font-bold ${low ? "text-ember" : "text-volt"}`} data-count-from="0" data-delay={600 + i * 120}>{g.sets}</span>
 												<span class="text-[11px] text-muted">/ {g.min}–{g.max}</span>
 											</div>
 											<div class="relative mt-1 h-2 rounded-full bg-raised">
@@ -164,8 +180,8 @@ const pro = [
 													style={`left:${(g.min / scale) * 100}%;width:${((g.max - g.min) / scale) * 100}%`}
 												></div>
 												<div
-													class={`absolute h-2 rounded-full ${low ? "bg-ember" : "bg-volt"}`}
-													style={`width:${(g.sets / scale) * 100}%`}
+													class={`bar-grow absolute h-2 rounded-full ${low ? "bg-ember" : "bg-volt"}`}
+													style={`width:${(g.sets / scale) * 100}%;--i:${i}`}
 												></div>
 											</div>
 										</div>
@@ -175,7 +191,9 @@ const pro = [
 						</div>
 						<div class="mt-4 flex items-center rounded-2xl border border-hair bg-surface px-3 py-2.5">
 							<p class="flex-1 font-mono text-[9px] tracking-[0.14em] text-muted">ENGINE</p>
-							<p class="font-mono text-[13px] font-bold text-volt">3 cardio · 95 min</p>
+							<p class="font-mono text-[13px] font-bold text-volt">
+								<span data-count-from="0" data-delay="900">3</span> cardio · <span data-count-from="0" data-delay="900">95</span> min
+							</p>
 						</div>
 						<div class="mt-2 rounded-2xl border border-hair bg-surface p-3">
 							<p class="font-mono text-[9px] tracking-[0.14em] text-muted">BIGGEST GAP THIS WEEK</p>
@@ -186,17 +204,42 @@ const pro = [
 			</div>
 		</section>
 
-		<section id="how" class="mx-auto mt-28 max-w-5xl px-4 sm:px-6">
+		<!-- The gym floor, scrolling past -->
+		<section class="mt-24 space-y-3 border-y border-hair py-5" aria-label="What you train">
+			{
+				[moves, movesB].map((row, r) => (
+					<div class="marquee overflow-hidden">
+						<div class={`marquee-track flex w-max gap-8 whitespace-nowrap ${r === 1 ? "reverse" : ""}`}>
+							{[...row, ...row].map((m, i) => (
+								<span
+									class={
+										r === 0
+											? "font-display text-2xl font-semibold tracking-tight text-fg sm:text-3xl"
+											: "font-mono text-xs uppercase tracking-[0.16em] text-muted"
+									}
+									aria-hidden={i >= row.length ? "true" : undefined}
+								>
+									{m}
+									<span class="ml-8 text-volt">{r === 0 ? "✦" : "·"}</span>
+								</span>
+							))}
+						</div>
+					</div>
+				))
+			}
+		</section>
+
+		<section id="how" class="mx-auto mt-24 max-w-5xl px-4 sm:px-6">
 			<p class="label">How it works</p>
-			<h2 class="mt-3 max-w-xl font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+			<h2 class="reveal mt-3 max-w-2xl font-display text-3xl font-semibold tracking-tight [text-wrap:balance] sm:text-5xl">
 				Look like a lifter, move like an athlete — measured, not guessed.
 			</h2>
 			<ol class="mt-10 border-t border-hair">
 				{
 					steps.map((s) => (
-						<li class="grid gap-3 border-b border-hair py-7 sm:grid-cols-[90px_220px_1fr] sm:items-baseline sm:gap-6">
-							<span class="font-mono text-sm text-volt">{s.n}</span>
-							<h3 class="font-display text-xl font-semibold">{s.title}</h3>
+						<li class="reveal group grid gap-3 border-b border-hair py-7 sm:grid-cols-[90px_240px_1fr] sm:items-baseline sm:gap-6">
+							<span class="font-mono text-sm text-volt transition-transform duration-300 group-hover:translate-x-1">{s.n}</span>
+							<h3 class="font-display text-xl font-semibold transition-colors duration-300 group-hover:text-volt">{s.title}</h3>
 							<p class="max-w-xl leading-relaxed text-soft">{s.body}</p>
 						</li>
 					))
@@ -204,26 +247,64 @@ const pro = [
 			</ol>
 		</section>
 
-		<section class="mx-auto mt-28 max-w-5xl px-4 sm:px-6">
-			<div class="grid items-center gap-10 rounded-[28px] border border-line bg-surface p-7 sm:grid-cols-[1fr_220px] sm:p-12">
-				<div>
-					<p class="label">The Adonis index</p>
+		<!-- Interactive: the Adonis index -->
+		<section id="calc" class="mx-auto mt-28 max-w-5xl scroll-mt-8 px-4 sm:px-6">
+			<div class="reveal grid items-center gap-10 rounded-[28px] border border-line bg-surface p-6 sm:p-10 md:grid-cols-[1fr_280px]">
+				<div class="min-w-0">
+					<p class="label">The Adonis index · try it</p>
 					<h2 class="mt-3 font-display text-3xl font-semibold leading-tight tracking-tight sm:text-[40px]">
 						Shoulders ÷ waist = your V<span class="text-volt">.</span>
 					</h2>
-					<p class="mt-5 max-w-xl leading-relaxed text-soft">
-						Classical sculptors gave their heroes shoulders about 1.6 times the waist. You don't need a statue's
-						genetics to move toward it: wider lats and side delts push the top number up, a lean, tight waist
-						brings the bottom one down. {APP_NAME} tracks both and tells you which lever to pull.
+					<p class="mt-4 max-w-xl leading-relaxed text-soft">
+						Classical sculptors gave their heroes shoulders about 1.6 times the waist. Drag the sliders to your
+						own tape measurements and see where you stand.
 					</p>
-					<div class="mt-8 grid max-w-md grid-cols-4 gap-2 font-mono text-[11px]">
-						<div class="rounded-xl border border-hair p-3"><p class="text-muted">&lt; 1.30</p><p class="mt-1 text-fg">Building</p></div>
-						<div class="rounded-xl border border-hair p-3"><p class="text-muted">1.30+</p><p class="mt-1 text-fg">Athletic</p></div>
-						<div class="rounded-xl border border-hair p-3"><p class="text-muted">1.45+</p><p class="mt-1 text-fg">V-taper</p></div>
-						<div class="rounded-xl border border-volt p-3"><p class="text-volt">1.58+</p><p class="mt-1 text-fg">Greek god</p></div>
+
+					<div class="mt-8 grid gap-6">
+						<label class="grid gap-3" for="calc-shoulders">
+							<span class="flex items-baseline justify-between">
+								<span class="font-mono text-xs tracking-[0.12em] text-muted">SHOULDERS</span>
+								<span id="calc-shoulders-val" class="font-mono text-sm text-fg">122 cm</span>
+							</span>
+							<input id="calc-shoulders" class="range" type="range" min="90" max="150" step="0.5" value="122" />
+						</label>
+						<label class="grid gap-3" for="calc-waist">
+							<span class="flex items-baseline justify-between">
+								<span class="font-mono text-xs tracking-[0.12em] text-muted">WAIST</span>
+								<span id="calc-waist-val" class="font-mono text-sm text-fg">82 cm</span>
+							</span>
+							<input id="calc-waist" class="range" type="range" min="60" max="110" step="0.5" value="82" />
+						</label>
+					</div>
+
+					<div class="mt-8 grid grid-cols-2 gap-2 font-mono text-[11px] sm:grid-cols-4">
+						{
+							STAGES.map((s, i) => (
+								<div class="stage-chip rounded-xl border border-hair p-3" data-stage={s.name} data-on={s.name === "V-taper" ? "true" : "false"}>
+									<p class="text-muted">{i === 0 ? "< 1.30" : `${s.from.toFixed(2)}+`}</p>
+									<p class="stage-name mt-1 text-fg">{s.name}</p>
+								</div>
+							))
+						}
 					</div>
 				</div>
-				<div class="mx-auto"><AdonisMark size={200} /></div>
+
+				<div class="mx-auto w-full max-w-[280px] text-center">
+					<p class="font-mono text-xs tracking-[0.14em] text-muted">SHOULDER : WAIST</p>
+					<p id="calc-ratio" class="mt-1 font-mono text-6xl font-bold tabular-nums">1.49</p>
+					<p id="calc-stage" class="mt-1 font-display text-lg font-semibold text-volt">V-taper</p>
+					<div class="mx-auto mt-3 h-1.5 w-40 overflow-hidden rounded-full bg-raised">
+						<div id="calc-bar" class="h-1.5 rounded-full bg-volt transition-[width] duration-300" style="width:69%"></div>
+					</div>
+					<svg class="mx-auto mt-4 w-full max-w-[240px]" viewBox="0 0 220 200" aria-label="Your torso shape compared with the 1.618 ideal">
+						<path d={torso(IDEAL)} fill="none" stroke="#C6FF3D" stroke-width="1.6" stroke-dasharray="5 4"></path>
+						<path id="calc-torso" d={torso(1.49)} fill="#2A2F38" stroke="#8A919E" stroke-width="1.6"></path>
+						<circle cx="110" cy="30" r="15" fill="#2A2F38" stroke="#8A919E" stroke-width="1.6"></circle>
+					</svg>
+					<p id="calc-advice" class="mt-3 text-sm leading-relaxed text-soft">
+						To reach 1.618: waist down 6.6 cm, or shoulders up 10.7 cm — usually a bit of both.
+					</p>
+				</div>
 			</div>
 		</section>
 
@@ -232,8 +313,8 @@ const pro = [
 			<dl class="mt-8 grid gap-px overflow-hidden rounded-2xl border border-hair bg-hair sm:grid-cols-2">
 				{
 					features.map((f) => (
-						<div class="bg-ink p-6">
-							<dt class="font-mono text-xs tracking-[0.12em] text-muted">{f.k}</dt>
+						<div class="spot reveal p-6">
+							<dt class="font-mono text-xs tracking-[0.12em] text-volt">{f.k}</dt>
 							<dd class="mt-2 leading-relaxed text-soft">{f.v}</dd>
 						</div>
 					))
@@ -244,15 +325,18 @@ const pro = [
 		<section class="mx-auto mt-28 max-w-5xl px-4 sm:px-6">
 			<p class="label">Free and Pro</p>
 			<div class="mt-8 grid gap-4 sm:grid-cols-2">
-				<div class="rounded-2xl border border-line bg-surface p-6">
+				<div class="lift reveal rounded-2xl border border-line bg-surface p-6 hover:border-faint">
 					<p class="font-display text-xl font-semibold">Free</p>
 					<p class="mt-1 text-sm text-muted">Everything you need to train for the V.</p>
 					<ul class="mt-5 space-y-2.5 text-soft">
 						{free.map((f) => <li class="flex gap-2"><span class="text-volt">✓</span>{f}</li>)}
 					</ul>
 				</div>
-				<div class="rounded-2xl border-[1.5px] border-volt bg-surface p-6">
-					<p class="font-display text-xl font-semibold">{APP_NAME} Pro</p>
+				<div class="pro-ring lift reveal rounded-2xl p-6">
+					<div class="flex items-center justify-between">
+						<p class="font-display text-xl font-semibold">{APP_NAME} Pro</p>
+						<AdonisMark size={30} />
+					</div>
 					<p class="mt-1 text-sm text-muted">Monthly, yearly or lifetime, through Google Play.</p>
 					<ul class="mt-5 space-y-2.5 text-soft">
 						{pro.map((f) => <li class="flex gap-2"><span class="text-volt">✓</span>{f}</li>)}
@@ -262,7 +346,7 @@ const pro = [
 		</section>
 
 		<section class="mx-auto mt-28 max-w-5xl px-4 sm:px-6">
-			<div class="rounded-[28px] border border-line bg-surface p-7 sm:p-12">
+			<div class="reveal rounded-[28px] border border-line bg-surface p-7 sm:p-12">
 				<p class="label">Privacy by design</p>
 				<h2 class="mt-3 max-w-2xl font-display text-3xl font-semibold leading-tight tracking-tight sm:text-[44px]">
 					Your body, your data<span class="text-volt">.</span>
@@ -300,11 +384,15 @@ const pro = [
 		</section>
 
 		<section class="mx-auto mt-28 max-w-5xl px-4 text-center sm:px-6">
-			<div class="flex justify-center"><AdonisMark size={72} /></div>
-			<h2 class="mt-6 font-display text-4xl font-semibold tracking-tight sm:text-5xl">
-				Build the V. Keep the engine<span class="text-volt">.</span>
+			<div class="flex justify-center"><AdonisMark size={96} animated /></div>
+			<h2 class="mt-6 font-display text-4xl font-semibold tracking-tight [text-wrap:balance] sm:text-6xl">
+				Build the V. Keep the <span class="shimmer">engine</span><span class="text-volt">.</span>
 			</h2>
 			<p class="mt-4 text-soft">Free on Android. iPhone version on the way.</p>
 		</section>
 	</main>
 </Layout>
+
+<script>
+	import "../scripts/motion";
+</script>

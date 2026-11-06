@@ -4,8 +4,11 @@ interface Props {
 	size?: number;
 	color?: string;
 	wreath?: boolean;
+	/** Leaves pop in one by one. */
+	animated?: boolean;
+	class?: string;
 }
-const { size = 32, color = "#C6FF3D", wreath = true } = Astro.props;
+const { size = 32, color = "#C6FF3D", wreath = true, animated = false, class: cls } = Astro.props;
 
 const TORSO =
 	"296,352 448,322 576,322 728,352 752,428 706,508 618,618 572,772 452,772 406,618 318,508 272,428";
@@ -39,13 +42,14 @@ function branch(side: 1 | -1) {
 const branches = wreath ? [branch(1), branch(-1)] : [];
 ---
 
-<svg width={size} height={size} viewBox="0 0 1024 1024" aria-hidden="true">
+<svg width={size} height={size} viewBox="0 0 1024 1024" aria-hidden="true" class:list={[cls, animated && "mark-anim"]}>
 	{
 		branches.map((b) => (
 			<g>
 				<path d={b.stem} stroke={color} stroke-width="9" fill="none" />
-				{b.leaves.map((l) => (
+				{b.leaves.map((l, i) => (
 					<ellipse
+						style={`--i:${i}`}
 						cx={l.x.toFixed(1)}
 						cy={l.y.toFixed(1)}
 						rx={(l.l / 2).toFixed(1)}
