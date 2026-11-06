@@ -17,7 +17,10 @@ const body = encodeURIComponent(
 			<ul>
 				<li>Open {APP_NAME} and tap the settings icon on the Today screen.</li>
 				<li>Scroll to <strong>Account</strong> and tap <strong>Delete account</strong>.</li>
-				<li>Confirm. Your account is removed from our servers and all workout data on the phone is erased.</li>
+				<li>
+					Confirm. Your account and anything synced to it are removed from our servers, and all data on the phone is
+					erased.
+				</li>
 			</ul>
 
 			<h2>By email (if you no longer have the app)</h2>
@@ -30,14 +33,19 @@ const body = encodeURIComponent(
 			<h2>What gets deleted</h2>
 			<ul>
 				<li>Your account: email, name, sign-in provider ID and sign-in history.</li>
+				<li>Training data synced with Pro cloud sync: workouts, routines, measurements, goals and settings.</li>
 				<li>
-					Workout data lives only on your phone. Deleting from the app erases it; uninstalling the app also removes
-					it. We hold no copy, so we can't delete or restore it for you.
+					Data on the phone, including progress photos. Deleting from the app erases it; uninstalling the app also
+					removes it. Without cloud sync we hold no copy, so we can't restore it for you.
 				</li>
 			</ul>
 
 			<h2>What we keep</h2>
-			<p>Nothing tied to your account. Security logs kept by the sign-in service expire on their own after a short retention period.</p>
+			<p>
+				Nothing tied to your account on our servers. Security logs kept by the sign-in service expire on their own
+				after a short retention period. Purchase records stay with Google Play and RevenueCat as tax law requires,
+				and a Google Play subscription keeps running until you cancel it in Google Play.
+			</p>
 		</article>
 	</main>
 </Layout>

@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import AdonisMark from "../components/AdonisMark.astro";
 import { APP_NAME, CONTACT_EMAIL } from "../site.config";
 
 interface Props {
@@ -8,8 +9,8 @@ interface Props {
 }
 
 const {
-	title = `${APP_NAME} — the gym log that keeps your data on your phone`,
-	description = "Log sets in two taps, watch your PRs climb, and keep every workout on your own phone. Free gym tracker for Android.",
+	title = `${APP_NAME} — train like an aesthetic hybrid athlete`,
+	description = "The training app for the aesthetic hybrid athlete: a V-taper physique with an engine to match. Track your shoulder-to-waist ratio, train lats and side delts with purpose, log your cardio, and watch the V take shape. Android.",
 } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const year = new Date().getFullYear();
@@ -39,13 +40,7 @@ const year = new Date().getFullYear();
 	<body class="min-h-screen bg-ink text-fg antialiased">
 		<header class="mx-auto flex max-w-5xl items-center justify-between px-4 py-5 sm:px-6">
 			<a href="/" class="flex items-center gap-3" aria-label={`${APP_NAME} home`}>
-				<svg width="32" height="32" viewBox="0 0 72 72" aria-hidden="true">
-					<rect width="72" height="72" rx="18" fill="#16191F"></rect>
-					<rect x="14" y="20" width="8" height="32" rx="3" fill="#C4C9D2"></rect>
-					<rect x="26" y="16" width="8" height="40" rx="3" fill="#C4C9D2"></rect>
-					<rect x="38" y="12" width="8" height="48" rx="3" fill="#C6FF3D"></rect>
-					<rect x="50" y="34" width="10" height="4" rx="2" fill="#8A919E"></rect>
-				</svg>
+				<AdonisMark size={34} />
 				<span class="font-display text-lg font-semibold tracking-tight">{APP_NAME}</span>
 			</a>
 			<nav class="flex items-center gap-5 text-sm text-soft">

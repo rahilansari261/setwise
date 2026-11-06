@@ -5,4 +5,4 @@ export const APP_NAME = "Adonis";
 export const OPERATOR = "[Your legal name or company]";
 export const CONTACT_EMAIL = "support@setwise.app";
 export const PLAY_STORE_URL: string | null = null;
-export const LEGAL_UPDATED = "16 October 2026";
+export const LEGAL_UPDATED = "6 November 2026";

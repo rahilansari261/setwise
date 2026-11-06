@@ -1,0 +1,64 @@
+---
+// Same geometry as apps/native/src/components/adonis-mark.tsx: a V-taper torso inside a laurel wreath.
+interface Props {
+	size?: number;
+	color?: string;
+	wreath?: boolean;
+}
+const { size = 32, color = "#C6FF3D", wreath = true } = Astro.props;
+
+const TORSO =
+	"296,352 448,322 576,322 728,352 752,428 706,508 618,618 572,772 452,772 406,618 318,508 272,428";
+const W = { cx: 512, cy: 545, r: 372 };
+
+function branch(side: 1 | -1) {
+	const leaves: { x: number; y: number; rot: number; l: number; w: number }[] = [];
+	const n = 10;
+	for (let i = 0; i < n; i++) {
+		const t = i / (n - 1);
+		const ang = ((90 + side * (8 + t * 118)) * Math.PI) / 180;
+		for (const [off, turn] of [
+			[-26, -38],
+			[26, 38],
+		] as const) {
+			leaves.push({
+				x: W.cx + Math.cos(ang) * (W.r + off),
+				y: W.cy + Math.sin(ang) * (W.r + off),
+				rot: (ang * 180) / Math.PI + 90 + turn * -side + (side === 1 ? 0 : 180),
+				l: 96 - 30 * t,
+				w: 40 - 12 * t,
+			});
+		}
+	}
+	const stem = Array.from({ length: 21 }, (_, i) => {
+		const ang = ((90 + side * (4 + (i / 20) * 124)) * Math.PI) / 180;
+		return `${i === 0 ? "M" : "L"} ${(W.cx + Math.cos(ang) * W.r).toFixed(1)} ${(W.cy + Math.sin(ang) * W.r).toFixed(1)}`;
+	}).join(" ");
+	return { leaves, stem };
+}
+const branches = wreath ? [branch(1), branch(-1)] : [];
+---
+
+<svg width={size} height={size} viewBox="0 0 1024 1024" aria-hidden="true">
+	{
+		branches.map((b) => (
+			<g>
+				<path d={b.stem} stroke={color} stroke-width="9" fill="none" />
+				{b.leaves.map((l) => (
+					<ellipse
+						cx={l.x.toFixed(1)}
+						cy={l.y.toFixed(1)}
+						rx={(l.l / 2).toFixed(1)}
+						ry={(l.w / 2).toFixed(1)}
+						fill={color}
+						transform={`rotate(${l.rot.toFixed(1)} ${l.x.toFixed(1)} ${l.y.toFixed(1)})`}
+					/>
+				))}
+			</g>
+		))
+	}
+	<polygon points={TORSO} fill={color}></polygon>
+	<circle cx="284" cy="410" r="54" fill={color}></circle>
+	<circle cx="740" cy="410" r="54" fill={color}></circle>
+	<circle cx="512" cy="232" r="54" fill={color}></circle>
+</svg>
