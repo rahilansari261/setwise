@@ -2,8 +2,8 @@ import { View } from "react-native";
 
 import { ProScreen } from "@/src/components/pro-screen";
 import { Card, Row, T } from "@/src/components/ui";
-import { CATEGORY_COLOR } from "@/src/data/exercises";
 import { muscleRecovery } from "@/src/lib/insights";
+import { useGroupLookup } from "@/src/state/vgroups";
 import { useWorkouts } from "@/src/state/workout-store";
 import { colors, fonts } from "@/src/theme";
 
@@ -22,7 +22,8 @@ function ago(hours: number) {
 
 export default function Recovery() {
 	const { workouts } = useWorkouts();
-	const muscles = muscleRecovery(workouts);
+	const lookup = useGroupLookup();
+	const muscles = muscleRecovery(workouts, lookup);
 
 	return (
 		<ProScreen feature="recovery" title="Muscle recovery">
@@ -32,18 +33,18 @@ export default function Recovery() {
 			</T>
 			<View style={{ gap: 10, marginTop: 16 }}>
 				{muscles.map((m) => (
-					<Card key={m.category}>
+					<Card key={m.group}>
 						<Row>
 							<View
 								style={{
 									width: 8,
 									height: 8,
 									borderRadius: 4,
-									backgroundColor: CATEGORY_COLOR[m.category],
+									backgroundColor: colors.accent,
 								}}
 							/>
 							<T variant="heading" style={{ flex: 1 }}>
-								{m.category}
+								{m.group}
 							</T>
 							<T
 								style={{

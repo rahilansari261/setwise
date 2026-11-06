@@ -1,6 +1,7 @@
 import { type Href, useRouter } from "expo-router";
 import {
 	Award,
+	BarChart3,
 	CalendarRange,
 	Camera,
 	HeartPulse,
@@ -12,13 +13,16 @@ import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import { ExerciseProgress } from "@/src/components/exercise-progress";
+import { GroupBar } from "@/src/components/group-bar";
 import { Chip, ProBadge, Screen, T } from "@/src/components/ui";
 import { VTaperFigure } from "@/src/components/vtaper-figure";
 import { CATEGORY_COLOR } from "@/src/data/exercises";
 import { fmt } from "@/src/lib/calc";
 import { addDays, shortDate, todayISO } from "@/src/lib/dates";
 import type { ProFeature } from "@/src/lib/pro";
+import { countsAsWork } from "@/src/lib/sets";
 import { setsByCategory } from "@/src/lib/stats";
+import { setsPerGroup, VGROUPS } from "@/src/lib/vmuscle";
 import {
 	IDEAL_RATIO,
 	progressToIdeal,
@@ -28,6 +32,7 @@ import {
 import { useExtras } from "@/src/state/extras";
 import { useT } from "@/src/state/i18n";
 import { usePremium, useProGate } from "@/src/state/premium";
+import { useGroupLookup } from "@/src/state/vgroups";
 import { useWorkouts } from "@/src/state/workout-store";
 import { colors, fonts } from "@/src/theme";
 
@@ -37,6 +42,7 @@ const TILES: {
 	icon: LucideIcon;
 	feature?: ProFeature;
 }[] = [
+	{ href: "/volume", label: "Weekly sets", icon: BarChart3 },
 	{ href: "/achievements", label: "Achievements", icon: Award },
 	{
 		href: "/measurements",
@@ -72,6 +78,11 @@ export default function Progress() {
 	const gate = useProGate();
 	const { workouts, personalRecords, settings } = useWorkouts();
 	const { measurements } = useExtras();
+	const lookup = useGroupLookup();
+	const weekSets = useMemo(
+		() => setsPerGroup(workouts, lookup, addDays(todayISO(), -6), countsAsWork),
+		[workouts, lookup],
+	);
 	const vt = vtaperHistory(measurements).at(-1);
 	const prevVt = vtaperHistory(measurements).at(-2);
 
@@ -91,11 +102,6 @@ export default function Progress() {
 
 	const [picked, setPicked] = useState<string | null>(null);
 	const selected = picked ?? trained[0]?.id ?? null;
-	const split = useMemo(
-		() => setsByCategory(workouts, addDays(todayISO(), -30)),
-		[workouts],
-	);
-	const maxSets = Math.max(1, ...split.map((s) => s.sets));
 	const records = Object.values(personalRecords)
 		.filter((r) => r.maxEstimated1RM.value > 0)
 		.sort((a, b) =>
@@ -216,29 +222,21 @@ export default function Progress() {
 						</View>
 					) : null}
 
-					<T variant="label" style={{ marginTop: 28 }}>
-						MUSCLE SPLIT · LAST 30 DAYS · SETS
-					</T>
-					<View style={{ marginTop: 10, gap: 8 }}>
-						{split.map((s) => (
-							<View key={s.category} style={styles.barRow}>
-								<T style={styles.barLabel}>{s.category}</T>
-								<View style={styles.barTrack}>
-									<View
-										style={{
-											width: `${(s.sets / maxSets) * 100}%`,
-											height: 10,
-											borderRadius: 3,
-											backgroundColor: CATEGORY_COLOR[s.category],
-										}}
-									/>
-								</View>
-								<T style={styles.barValue}>{s.sets}</T>
-							</View>
+					<Pressable
+						accessibilityRole="button"
+						onPress={() => router.push("/volume")}
+						style={{ marginTop: 28 }}
+					>
+						<T variant="label">THIS WEEK · SETS PER MUSCLE ›</T>
+					</Pressable>
+					<View style={{ marginTop: 12, gap: 14 }}>
+						{VGROUPS.slice(0, 4).map((g) => (
+							<GroupBar
+								key={g.group}
+								info={g}
+								sets={weekSets.get(g.group) ?? 0}
+							/>
 						))}
-						{split.length === 0 ? (
-							<T variant="small">No sets in the last 30 days.</T>
-						) : null}
 					</View>
 
 					<T variant="label" style={{ marginTop: 28 }}>

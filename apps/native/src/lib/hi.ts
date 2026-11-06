@@ -506,6 +506,39 @@ const H: Record<string, string> = {
 
 	"bar weight": "बार का वज़न",
 	"how to": "कैसे करें",
+	// v-taper
+	"v-taper": "V-taper",
+	"weekly sets": "हफ़्ते के सेट",
+	"shoulder : waist": "कंधे : कमर",
+	"enter both": "दोनों माप डालें",
+	"measure today (cm)": "आज की माप (cm)",
+	shoulders: "कंधे",
+	building: "शुरुआत",
+	athletic: "एथलेटिक",
+	"greek god": "ग्रीक गॉड",
+	"dashed line: the 1.618 ideal at your waist":
+		"डैश वाली रेखा: आपकी कमर पर 1.618 का आदर्श",
+	"unlock the trend": "ट्रेंड अनलॉक करें",
+	"see how your ratio moves week by week.":
+		"देखें कि आपका अनुपात हफ़्ते-दर-हफ़्ते कैसे बदलता है।",
+	"save your measurements on two different days to see a trend.":
+		"ट्रेंड देखने के लिए दो अलग दिन माप सेव करें।",
+	"v-taper trend": "V-taper ट्रेंड",
+	"track your shoulder-to-waist ratio over time.":
+		"समय के साथ अपना कंधे-कमर का अनुपात ट्रैक करें।",
+	"add shoulders and waist to see your score":
+		"स्कोर देखने के लिए कंधे और कमर की माप डालें",
+	"hard sets in the last 7 days, against the range that builds each muscle. the first four are what widen your frame.":
+		"पिछले 7 दिनों के कठिन सेट, उस रेंज के मुक़ाबले जो हर मसल बनाती है। पहले चार आपका ढाँचा चौड़ा करते हैं।",
+	"no sets this week yet": "इस हफ़्ते अभी कोई सेट नहीं",
+	"log a workout and your lats, side delts and the rest fill in here.":
+		"वर्कआउट लॉग करें, यहाँ आपके लैट्स, साइड डेल्ट और बाकी भर जाएँगे।",
+	"biggest gaps this week": "इस हफ़्ते की सबसे बड़ी कमियाँ",
+	"every muscle is in range": "हर मसल रेंज में है",
+	"nice week. keep it up.": "बढ़िया हफ़्ता। ऐसे ही चलते रहें।",
+	"this week · sets per muscle ›": "इस हफ़्ते · हर मसल के सेट ›",
+	"ranges are common hypertrophy guidance (roughly 10–20 hard sets per muscle per week), not a prescription. warm-up sets don't count.":
+		"रेंज आम हाइपरट्रॉफ़ी सलाह (हफ़्ते में हर मसल के लगभग 10–20 कठिन सेट) पर आधारित हैं, कोई नुस्ख़ा नहीं। वार्म-अप सेट नहीं गिने जाते।",
 	// cloud sync
 	"cloud sync": "क्लाउड सिंक",
 	"cloud sync & backup": "क्लाउड सिंक और बैकअप",
@@ -614,6 +647,9 @@ export const HI_PATTERNS: [RegExp, (...m: string[]) => string][] = [
 	[/^Bar (.+) · plates (.+)$/, (b, p) => `बार ${b} · प्लेटें ${p}`],
 	[/^Target: (.+)$/, (x) => `मुख्य मसल: ${x}`],
 	[/^Also works: (.+)$/, (x) => `साथ में: ${x}`],
+	[/^(.+): (\d+) more sets?$/, (g, n) => `${g}: ${n} सेट और`],
+	[/^Waist down (.+) cm(.*)$/, (n, r) => `कमर ${n} cm घटाएँ${r}`],
+	[/^TO REACH (.+)$/, (n) => `${n} तक पहुँचने के लिए`],
 	[/^Delete (.+)\?$/, (x) => `${x} हटाएँ?`],
 	[/^Remove (.+)\?$/, (x) => `${x} हटाएँ?`],
 	[/^Added (.+)$/, (x) => `${x} जुड़ गया`],

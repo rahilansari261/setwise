@@ -2,6 +2,12 @@ import { lbToKg } from "@/src/lib/calc";
 import { addDays, fromISO, startOfWeek } from "@/src/lib/dates";
 import { countsAsWork, setVolume } from "@/src/lib/sets";
 import { exerciseSessions, hasLogged, weekStreak } from "@/src/lib/stats";
+import {
+	type ExerciseLookup,
+	groupOf,
+	VGROUPS,
+	type VGroup,
+} from "@/src/lib/vmuscle";
 import type {
 	Category,
 	Gender,
@@ -18,26 +24,22 @@ const toKg = (value: number, unit: Unit) =>
 
 // ---- muscle recovery ----------------------------------------------------------
 
-export const RECOVERY_CATEGORIES: Category[] = [
-	"Chest",
-	"Back",
-	"Legs",
-	"Shoulders",
-	"Arms",
-	"Core",
-];
+export const RECOVERY_GROUPS: VGroup[] = VGROUPS.map((g) => g.group);
 
-const BASE_RECOVERY_HOURS: Partial<Record<Category, number>> = {
+const BASE_RECOVERY_HOURS: Record<VGroup, number> = {
 	Legs: 60,
-	Back: 54,
+	Lats: 54,
+	"Upper back": 48,
 	Chest: 48,
-	Shoulders: 42,
+	"Front delts": 42,
+	"Side delts": 36,
+	"Rear delts": 36,
 	Arms: 36,
 	Core: 30,
 };
 
 export interface MuscleRecovery {
-	category: Category;
+	group: VGroup;
 	lastTrained?: number;
 	sets: number;
 	hoursSince?: number;
@@ -50,21 +52,28 @@ export interface MuscleRecovery {
 /** Fatigue model: heavier sessions (more sets, higher RPE) need longer. A rule of thumb, not science. */
 export function muscleRecovery(
 	workouts: Workouts,
+	exercises: ExerciseLookup,
 	now = Date.now(),
 ): MuscleRecovery[] {
-	return RECOVERY_CATEGORIES.map((category) => {
+	const dates = Object.keys(workouts).sort().reverse();
+	return RECOVERY_GROUPS.map((group) => {
 		let last = 0;
 		let sets = 0;
 		let rpeSum = 0;
 		let rpeN = 0;
-		const dates = Object.keys(workouts).sort().reverse();
 		for (const date of dates) {
 			const day = workouts[date];
 			if (!day) continue;
 			let hit = 0;
 			let stamp = 0;
 			for (const we of day.exercises) {
-				if (we.category !== category) continue;
+				const known = exercises.get(we.exerciseId);
+				const g = groupOf({
+					name: known?.name ?? we.exerciseName,
+					category: known?.category ?? we.category,
+					target: known?.target,
+				});
+				if (g !== group) continue;
 				for (const s of we.sets) {
 					if (!s.completed || !countsAsWork(s)) continue;
 					hit++;
@@ -81,17 +90,17 @@ export function muscleRecovery(
 				break;
 			}
 		}
-		const base = BASE_RECOVERY_HOURS[category] ?? 48;
+		const base = BASE_RECOVERY_HOURS[group];
 		const needHours = Math.min(
 			96,
 			base + Math.max(0, sets - 6) * 3 + (rpeN && rpeSum / rpeN >= 9 ? 12 : 0),
 		);
 		if (!last)
-			return { category, sets: 0, needHours, recovered: 1, state: "fresh" };
+			return { group, sets: 0, needHours, recovered: 1, state: "fresh" };
 		const hoursSince = Math.max(0, (now - last) / 3_600_000);
 		const recovered = Math.min(1, hoursSince / needHours);
 		return {
-			category,
+			group,
 			lastTrained: last,
 			sets,
 			hoursSince,
