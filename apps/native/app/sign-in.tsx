@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import Svg, { Path, Rect } from "react-native-svg";
 
+import { AdonisMark } from "@/src/components/adonis-mark";
 import { Button, Field, Screen, T } from "@/src/components/ui";
 import { ENV } from "@/src/env";
 import { AuthError, secretLoginEnabled, useAuth } from "@/src/state/auth";
@@ -35,17 +36,9 @@ function GoogleMark() {
 	);
 }
 
-/** The Setwise mark: three stacked plates, the last one in accent. Doubles as the secret button. */
+/** The Adonis mark. Doubles as the secret button. */
 function Logo() {
-	return (
-		<Svg width={72} height={72} viewBox="0 0 72 72" accessibilityElementsHidden>
-			<Rect x={0} y={0} width={72} height={72} rx={20} fill={colors.surface} />
-			<Rect x={14} y={20} width={8} height={32} rx={3} fill={colors.textSoft} />
-			<Rect x={26} y={16} width={8} height={40} rx={3} fill={colors.textSoft} />
-			<Rect x={38} y={12} width={8} height={48} rx={3} fill={colors.accent} />
-			<Rect x={50} y={34} width={10} height={4} rx={2} fill={colors.muted} />
-		</Svg>
-	);
+	return <AdonisMark size={96} />;
 }
 
 export default function SignIn() {
@@ -117,21 +110,21 @@ export default function SignIn() {
 			<View style={{ flex: 1, justifyContent: "center", gap: 28 }}>
 				<Pressable
 					onPress={onLogoPress}
-					accessibilityLabel="Setwise"
+					accessibilityLabel="Adonis"
 					hitSlop={12}
 					style={{ alignSelf: "flex-start" }}
 				>
 					<Logo />
 				</Pressable>
 				<View style={{ gap: 12 }}>
-					<T variant="label">SETWISE · GYM LOG</T>
+					<T variant="label">ADONIS · BUILD THE V</T>
 					<T style={styles.headline}>
-						Every set,{"\n"}counted
+						Build{"\n"}the V
 						<T style={[styles.headline, { color: colors.accent }]}>.</T>
 					</T>
 					<T style={{ color: colors.muted, fontSize: 15, lineHeight: 22 }}>
-						Log lifts in seconds, see your PRs climb. Your workouts stay on this
-						phone.
+						Train for broad shoulders and a narrow waist. Track the ratio, watch
+						it climb. Your data stays on this phone.
 					</T>
 				</View>
 			</View>

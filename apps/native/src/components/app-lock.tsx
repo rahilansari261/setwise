@@ -31,7 +31,7 @@ export function AppLock({ children }: { children: ReactNode }) {
 		trying.current = true;
 		try {
 			const res = await LocalAuthentication.authenticateAsync({
-				promptMessage: "Unlock Setwise",
+				promptMessage: "Unlock Adonis",
 				fallbackLabel: "Use passcode",
 			});
 			if (res.success) setLocked(false);
@@ -73,7 +73,7 @@ export function AppLock({ children }: { children: ReactNode }) {
 				<View style={styles.cover}>
 					<Fingerprint size={48} color={colors.accent} />
 					<T variant="title" style={{ marginTop: 16 }}>
-						Setwise is locked
+						Adonis is locked
 					</T>
 					<Button
 						title="Unlock"

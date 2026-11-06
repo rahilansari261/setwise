@@ -23,7 +23,7 @@ target muscles and the English and Hindi instructions). They are released under 
 
 The dataset's thumbnails and animation GIFs are © Gym visual (<https://gymvisual.com/>). That
 dataset's own licence says the media is *not* covered by the MIT licence and that cloning the
-repository grants no right to use it. Setwise therefore does not bundle or link to those files.
+repository grants no right to use it. Adonis therefore does not bundle or link to those files.
 
 If you obtain a licence from Gym visual, host the GIFs yourself and set
 `EXPO_PUBLIC_EXERCISE_MEDIA_BASE_URL`; the exercise screen then shows the GIF with the required

@@ -1,5 +1,5 @@
 // Deletes the calling user's Supabase auth account.
-// Setwise keeps all workout data on the phone, so the auth user is the only thing to remove here.
+// Adonis keeps all workout data on the phone, so the auth user is the only thing to remove here.
 // Deploy: npx supabase functions deploy delete-account
 import { createClient } from "jsr:@supabase/supabase-js@2";
 

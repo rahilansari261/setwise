@@ -57,10 +57,10 @@ export function parseRoutineBundle(text: string): RoutineBundle {
 	try {
 		data = JSON.parse(text);
 	} catch {
-		throw new Error("That file isn't a Setwise routine.");
+		throw new Error("That file isn't an Adonis routine.");
 	}
 	if (data.app !== "setwise-routine" || !data.routine?.days?.length)
-		throw new Error("That file isn't a Setwise routine.");
+		throw new Error("That file isn't an Adonis routine.");
 	return {
 		app: "setwise-routine",
 		version: 1,

@@ -67,7 +67,7 @@ export async function scheduleReminders(
 			Notifications.scheduleNotificationAsync({
 				content: {
 					title: "Time to train",
-					body: `${greeting} session is ready in Setwise.`,
+					body: `${greeting} session is ready in Adonis.`,
 					data: { kind: REMINDER_TAG },
 				},
 				trigger: {

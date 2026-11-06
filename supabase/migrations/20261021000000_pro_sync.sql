@@ -1,4 +1,4 @@
--- Setwise Pro cloud sync.
+-- Adonis Pro cloud sync.
 -- entitlements: who is Pro. Written only by the revenuecat-webhook Edge Function (service role).
 -- sync_records: one row per synced record (a workout day, the routines list, …), readable and
 -- writable only by its owner and only while they are Pro.

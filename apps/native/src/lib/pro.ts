@@ -1,4 +1,4 @@
-/** Every feature that needs Setwise Pro. The paywall lists these, `useProGate` checks them. */
+/** Every feature that needs Adonis Pro. The paywall lists these, `useProGate` checks them. */
 export const PRO_FEATURES = {
 	vtaperTrend: {
 		title: "V-taper trend",

@@ -18,7 +18,7 @@ const googleSignInPlugin: NonNullable<ExpoConfig["plugins"]> = iosGoogleClientId
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
 	...config,
-	name: "Setwise",
+	name: "Adonis",
 	slug: "setwise",
 	version: "1.0.0",
 	orientation: "portrait",
@@ -56,14 +56,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 			"expo-image-picker",
 			{
 				photosPermission:
-					"Setwise reads photos you choose for your progress timeline.",
+					"Adonis reads photos you choose for your progress timeline.",
 				cameraPermission:
-					"Setwise uses the camera for progress photos. They stay on your phone.",
+					"Adonis uses the camera for progress photos. They stay on your phone.",
 			},
 		],
 		[
 			"expo-local-authentication",
-			{ faceIDPermission: "Unlock Setwise with Face ID." },
+			{ faceIDPermission: "Unlock Adonis with Face ID." },
 		],
 		// Light buttons on a dark bar, so the system nav bar doesn't glare under the dark UI.
 		["expo-navigation-bar", { style: "light", enforceContrast: false }],

@@ -22,7 +22,7 @@ const FAQ = [
 	},
 	{
 		q: "How do I cancel Pro?",
-		a: "Open Google Play → Payments & subscriptions → Subscriptions → Setwise, then cancel. You keep Pro until the period ends.",
+		a: "Open Google Play → Payments & subscriptions → Subscriptions → Adonis, then cancel. You keep Pro until the period ends.",
 	},
 	{
 		q: "What is RPE?",
@@ -45,7 +45,7 @@ export default function Help() {
 			`Account: ${auth.user?.email ?? "guest"}`,
 		].join("\n");
 		Linking.openURL(
-			`mailto:${email}?subject=${encodeURIComponent("Setwise support")}&body=${encodeURIComponent(body)}`,
+			`mailto:${email}?subject=${encodeURIComponent("Adonis support")}&body=${encodeURIComponent(body)}`,
 		);
 	};
 

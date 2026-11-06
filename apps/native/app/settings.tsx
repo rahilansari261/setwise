@@ -114,7 +114,7 @@ export default function SettingsScreen() {
 										"Import failed",
 										e instanceof Error
 											? e.message
-											: "That file isn't a Setwise backup.",
+											: "That file isn't an Adonis backup.",
 									);
 								}
 								resolve();
@@ -221,7 +221,7 @@ export default function SettingsScreen() {
 					<Row gap={12}>
 						<Crown size={22} color={colors.accent} />
 						<View style={{ flex: 1 }}>
-							<T variant="heading">{t("Setwise Pro")}</T>
+							<T variant="heading">{t("Adonis Pro")}</T>
 							<T variant="small">
 								{premium.isPro
 									? t("You're on Pro")

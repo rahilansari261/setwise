@@ -1,4 +1,4 @@
-# Supabase CLI config. Setwise only uses Supabase for auth plus one Edge Function.
+# Supabase CLI config. Adonis only uses Supabase for auth plus one Edge Function.
 project_id = "setwise"
 
 [functions.delete-account]

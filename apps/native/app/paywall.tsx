@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Alert, View } from "react-native";
 import type { PurchasesPackage } from "react-native-purchases";
 
+import { AdonisMark } from "@/src/components/adonis-mark";
 import {
 	Button,
 	Card,
@@ -61,7 +62,7 @@ export default function Paywall() {
 			<Screen stack>
 				<Row gap={12}>
 					<IconButton icon={X} label="Close" onPress={() => router.back()} />
-					<T variant="title">Setwise Pro</T>
+					<T variant="title">Adonis Pro</T>
 				</Row>
 				<Card style={{ marginTop: 20 }} active>
 					<Row gap={10}>
@@ -71,7 +72,7 @@ export default function Paywall() {
 					<T variant="small" style={{ marginTop: 6 }}>
 						{premium.source === "dev"
 							? "Unlocked with the developer switch."
-							: "Thanks for supporting Setwise. Manage the subscription in Google Play."}
+							: "Thanks for supporting Adonis. Manage the subscription in Google Play."}
 					</T>
 				</Card>
 			</Screen>
@@ -83,9 +84,13 @@ export default function Paywall() {
 			<Row gap={12}>
 				<IconButton icon={X} label="Close" onPress={() => router.back()} />
 				<T variant="title" style={{ flex: 1 }}>
-					Setwise Pro
+					Adonis Pro
 				</T>
 			</Row>
+
+			<View style={{ alignItems: "center", marginTop: 12 }}>
+				<AdonisMark size={110} />
+			</View>
 
 			{asked ? (
 				<Card style={{ marginTop: 16 }} active>

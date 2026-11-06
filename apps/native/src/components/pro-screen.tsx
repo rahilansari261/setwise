@@ -42,7 +42,7 @@ export function ProScreen({
 						{info.blurb}
 					</T>
 					<Button
-						title="See Setwise Pro"
+						title="See Adonis Pro"
 						style={{ marginTop: 16 }}
 						onPress={() =>
 							router.replace({ pathname: "/paywall", params: { feature } })

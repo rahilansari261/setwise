@@ -1,4 +1,4 @@
-# Setwise
+# Adonis
 
 A fast gym workout log. Workouts, body stats and settings live on the phone (SQLite). Supabase handles sign-in and, for Pro users, optional cloud sync.
 

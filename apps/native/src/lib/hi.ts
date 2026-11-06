@@ -356,7 +356,7 @@ const H: Record<string, string> = {
 
 	// settings
 	settings: "सेटिंग्स",
-	"setwise pro": "Setwise Pro",
+	"adonis pro": "Adonis Pro",
 	"you're on pro": "आप Pro पर हैं",
 	"unlock analytics, folders, photos and more":
 		"एनालिटिक्स, फ़ोल्डर, फ़ोटो और बहुत कुछ पाएँ",
@@ -434,7 +434,7 @@ const H: Record<string, string> = {
 	"no biometrics set up": "बायोमेट्रिक सेट नहीं है",
 	"add a fingerprint or face in your phone's settings first.":
 		"पहले फ़ोन की सेटिंग्स में फ़िंगरप्रिंट या फ़ेस जोड़ें।",
-	"setwise is locked": "Setwise लॉक है",
+	"adonis is locked": "Adonis लॉक है",
 
 	// gyms
 	"each gym remembers its bar weight and which plates it has. the plate calculator and warm-up sets use the active gym.":
@@ -455,7 +455,7 @@ const H: Record<string, string> = {
 	redeem: "रिडीम करें",
 	"enter code": "कोड डालें",
 	"restore purchases": "खरीदारी रिस्टोर करें",
-	"see setwise pro": "Setwise Pro देखें",
+	"see adonis pro": "Adonis Pro देखें",
 	"how to enable billing": "बिलिंग कैसे चालू करें",
 	"loading plans…": "प्लान लोड हो रहे हैं…",
 	"subscriptions aren't enabled in this build yet.":
@@ -548,9 +548,9 @@ const H: Record<string, string> = {
 	email: "ईमेल",
 	"continue with google": "Google से जारी रखें",
 	"signing in…": "साइन-इन हो रहा है…",
-	"setwise · gym log": "SETWISE · जिम लॉग",
-	"log lifts in seconds, see your prs climb. your workouts stay on this phone.":
-		"सेकंडों में लिफ़्ट लॉग करें, अपने PR बढ़ते देखें। आपके वर्कआउट इसी फ़ोन में रहते हैं।",
+	"adonis · build the v": "ADONIS · V बनाएँ",
+	"train for broad shoulders and a narrow waist. track the ratio, watch it climb. your data stays on this phone.":
+		"चौड़े कंधे और पतली कमर के लिए ट्रेन करें। अनुपात ट्रैक करें, उसे बढ़ते देखें। आपका डेटा इसी फ़ोन में रहता है।",
 	terms: "शर्तें",
 	"privacy policy ": "प्राइवेसी पॉलिसी ",
 	continue: "आगे बढ़ें",
