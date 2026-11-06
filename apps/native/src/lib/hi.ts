@@ -563,6 +563,27 @@ const H: Record<string, string> = {
 	"for experienced lifters": "अनुभवी लिफ़्टर्स के लिए",
 	custom: "कस्टम",
 	"build your own routine later": "अपना रूटीन बाद में बनाएँ",
+	// check-in
+	"check-in": "चेक-इन",
+	"photo check-ins": "फ़ोटो चेक-इन",
+	"front, side and back every two weeks, compared before and after.":
+		"हर दो हफ़्ते आगे, साइड और पीछे की फ़ोटो, पहले-बाद की तुलना के साथ।",
+	"first check-in": "पहला चेक-इन",
+	"check-in due": "चेक-इन का समय",
+	"before · after": "पहले · बाद",
+	"all photos": "सभी फ़ोटो",
+	"take photo": "फ़ोटो लें",
+	front: "आगे",
+	side: "साइड",
+	"face the camera, arms relaxed, feet together.":
+		"कैमरे की तरफ़ मुँह, बाँहें ढीली, पैर साथ।",
+	"turn 90°, arms by your sides, stand tall.": "90° घूमें, बाँहें बगल में, सीधे खड़े रहें।",
+	"back to the camera, spread your lats, arms slightly out.":
+		"कैमरे की तरफ़ पीठ, लैट्स फैलाएँ, बाँहें थोड़ी बाहर।",
+	"two check-ins of the same pose and the comparison shows up here.":
+		"एक ही पोज़ के दो चेक-इन होते ही तुलना यहाँ दिखेगी।",
+	"front, side and back every 14 days. same spot, same light, same time of day — that's what makes the comparison honest. photos stay on this phone.":
+		"हर 14 दिन आगे, साइड और पीछे की फ़ोटो। वही जगह, वही रोशनी, दिन का वही समय — तभी तुलना सही होती है। फ़ोटो इसी फ़ोन में रहती हैं।",
 	// cloud sync
 	"cloud sync": "क्लाउड सिंक",
 	"cloud sync & backup": "क्लाउड सिंक और बैकअप",
@@ -676,6 +697,12 @@ export const HI_PATTERNS: [RegExp, (...m: string[]) => string][] = [
 	[/^TO REACH (.+)$/, (n) => `${n} तक पहुँचने के लिए`],
 	[/^(\d+) days$/, (n) => `${n} दिन`],
 	[/^goal (.+)$/i, (x) => `लक्ष्य ${x}`],
+	[/^NEXT CHECK-IN IN (\d+) DAYS$/i, (n) => `अगला चेक-इन ${n} दिन में`],
+	[/^(\d+) days apart$/, (n) => `${n} दिन का अंतर`],
+	[
+		/^(BEFORE|AFTER) · (.+)$/i,
+		(w, d) => `${w.toUpperCase() === "BEFORE" ? "पहले" : "बाद"} · ${d}`,
+	],
 	[/^Delete (.+)\?$/, (x) => `${x} हटाएँ?`],
 	[/^Remove (.+)\?$/, (x) => `${x} हटाएँ?`],
 	[/^Added (.+)$/, (x) => `${x} जुड़ गया`],

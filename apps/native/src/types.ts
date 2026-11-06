@@ -155,11 +155,15 @@ export interface Measurement {
 	neck?: number;
 }
 
+export type Pose = "front" | "side" | "back";
+
 export interface ProgressPhoto {
 	id: string;
 	date: string;
 	uri: string;
 	note?: string;
+	/** Older photos have none and count as front. */
+	pose?: Pose;
 }
 
 export type TargetKind = "bodyweight" | "lift" | "weekly_workouts";

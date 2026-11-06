@@ -52,7 +52,7 @@ const TILES: {
 	},
 	{
 		href: "/photos",
-		label: "Photos",
+		label: "Check-in",
 		icon: Camera,
 		feature: "photos",
 	},

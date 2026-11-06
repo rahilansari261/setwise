@@ -33,8 +33,8 @@ export const PRO_FEATURES = {
 		blurb: "Weight, body fat and circumferences over time.",
 	},
 	photos: {
-		title: "Progress photos",
-		blurb: "Private photo timeline stored on your phone.",
+		title: "Photo check-ins",
+		blurb: "Front, side and back every two weeks, compared before and after.",
 	},
 	goals: {
 		title: "Goals",
@@ -59,6 +59,24 @@ export const PRO_FEATURES = {
 } as const;
 
 export type ProFeature = keyof typeof PRO_FEATURES;
+
+/** Paywall order: what a V-taper lifter cares about first. */
+export const PAYWALL_ORDER: ProFeature[] = [
+	"vtaperTrend",
+	"photos",
+	"cloudSync",
+	"measurements",
+	"goals",
+	"recovery",
+	"recap",
+	"advancedCharts",
+	"unlimitedRoutines",
+	"routineFolders",
+	"routineShare",
+	"exerciseFolders",
+	"gyms",
+	"biometric",
+];
 
 /** Free accounts can keep this many routines of their own. */
 export const FREE_ROUTINE_LIMIT = 3;

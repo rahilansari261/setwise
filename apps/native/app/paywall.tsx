@@ -14,7 +14,7 @@ import {
 	Screen,
 	T,
 } from "@/src/components/ui";
-import { PRO_FEATURES, type ProFeature } from "@/src/lib/pro";
+import { PAYWALL_ORDER, PRO_FEATURES, type ProFeature } from "@/src/lib/pro";
 import { alertBillingMissing, usePremium } from "@/src/state/premium";
 import { colors, fonts } from "@/src/theme";
 
@@ -110,7 +110,7 @@ export default function Paywall() {
 				EVERYTHING IN PRO
 			</T>
 			<Card style={{ marginTop: 10, gap: 12 }}>
-				{Object.values(PRO_FEATURES).map((f) => (
+				{PAYWALL_ORDER.map((k) => PRO_FEATURES[k]).map((f) => (
 					<Row key={f.title} gap={10} style={{ alignItems: "flex-start" }}>
 						<Check size={16} color={colors.accent} style={{ marginTop: 3 }} />
 						<View style={{ flex: 1 }}>
