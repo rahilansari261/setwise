@@ -32,7 +32,7 @@ import {
 	Sheet,
 	T,
 } from "@/src/components/ui";
-import { DEFAULT_ROUTINES } from "@/src/data/routines";
+import { BUILT_IN_ROUTINE_IDS } from "@/src/data/routines";
 import {
 	parseRoutineBundle,
 	pickBackupText,
@@ -61,8 +61,9 @@ export default function Routines() {
 	const [newFolder, setNewFolder] = useState("");
 	const [filing, setFiling] = useState<Routine | null>(null);
 
-	const builtIn = new Set(DEFAULT_ROUTINES.map((r) => r.id));
-	const customCount = store.routines.filter((r) => !builtIn.has(r.id)).length;
+	const customCount = store.routines.filter(
+		(r) => !BUILT_IN_ROUTINE_IDS.has(r.id),
+	).length;
 	const atLimit = !isPro && customCount >= FREE_ROUTINE_LIMIT;
 	const visible = store.routines.filter(
 		(r) =>

@@ -36,6 +36,7 @@ const LOCAL_ONLY_KV = new Set([
 	"dev_pro",
 	"auth_guest",
 	"photos",
+	"programs_seeded",
 ]);
 
 let silent = false;

@@ -16,10 +16,19 @@ import {
 	T,
 	Toggle,
 } from "@/src/components/ui";
-import { SPLITS, splitById, trainingWeekdays } from "@/src/data/routines";
+import { VTaperFigure } from "@/src/components/vtaper-figure";
+import {
+	recommendedSplit,
+	SPLITS,
+	splitById,
+	trainingWeekdays,
+} from "@/src/data/routines";
 import { cmToFtIn, kgToLb, lbToKg } from "@/src/lib/calc";
+import { todayISO } from "@/src/lib/dates";
 import { scheduleReminders } from "@/src/lib/notifications";
+import { IDEAL_RATIO, stageOf, vtaperRatio } from "@/src/lib/vtaper";
 import { useAuth } from "@/src/state/auth";
+import { useExtras } from "@/src/state/extras";
 import { useWorkouts } from "@/src/state/workout-store";
 import { colors, fonts, radius } from "@/src/theme";
 import type {
@@ -31,31 +40,59 @@ import type {
 	Unit,
 } from "@/src/types";
 
-const STEPS = ["YOU", "BODY", "TRAINING", "GOALS", "REMINDERS"] as const;
+const STEPS = [
+	"YOU",
+	"BODY",
+	"MEASURE",
+	"PROGRAM",
+	"GOAL",
+	"REMINDERS",
+] as const;
 const WEEK_LETTERS = ["M", "T", "W", "T", "F", "S", "S"];
 type BodyField = "age" | "height" | "weight";
 
 export default function Onboarding() {
 	const { displayName } = useAuth();
 	const { completeOnboarding } = useWorkouts();
+	const { saveMeasurement } = useExtras();
 	const [step, setStep] = useState(0);
 	const [saving, setSaving] = useState(false);
 
 	const [name, setName] = useState(displayName.split(" ")[0] ?? "");
-	const [gender, setGender] = useState<Gender>("male");
+	// Adonis is built for men chasing a V-taper, so the profile is male.
+	const gender: Gender = "male";
 	const [unit, setUnit] = useState<Unit>("kg");
 	const [age, setAge] = useState(25);
 	const [heightCm, setHeightCm] = useState(172);
 	const [weightKg, setWeightKg] = useState(70);
 	const [bodyField, setBodyField] = useState<BodyField>("weight");
-	const [split, setSplit] = useState<SplitId>("ppl");
+	const [split, setSplit] = useState<SplitId>(recommendedSplit("intermediate"));
+	const [shouldersText, setShouldersText] = useState("");
+	const [waistText, setWaistText] = useState("");
 	const [experience, setExperience] = useState<Experience>("intermediate");
 	const [goal, setGoal] = useState<Goal>("muscle");
-	const [daysPerWeek, setDaysPerWeek] = useState(6);
+	const [daysPerWeek, setDaysPerWeek] = useState(4);
 	const [reminderOn, setReminderOn] = useState(true);
 	const [hour, setHour] = useState(18);
 	const [minute, setMinute] = useState(0);
-	const [days, setDays] = useState<number[]>(trainingWeekdays("ppl"));
+	const [days, setDays] = useState<number[]>(
+		trainingWeekdays(recommendedSplit("intermediate")),
+	);
+
+	// Tape measurements are typed in cm, or inches for lb users; stored in cm.
+	const toCm = (text: string) => {
+		const n = Number.parseFloat(text.replace(",", "."));
+		if (!Number.isFinite(n) || n <= 0) return 0;
+		return unit === "kg" ? n : Math.round(n * 2.54 * 10) / 10;
+	};
+	const shouldersCm = toCm(shouldersText);
+	const waistCm = toCm(waistText);
+	const ratio = vtaperRatio(shouldersCm, waistCm);
+
+	const pickExperience = (value: Experience) => {
+		setExperience(value);
+		pickSplit(recommendedSplit(value));
+	};
 
 	const pickSplit = (id: SplitId) => {
 		setSplit(id);
@@ -90,6 +127,13 @@ export default function Onboarding() {
 		};
 		try {
 			await scheduleReminders(profile.reminder, profile.name).catch(() => {});
+			if (ratio > 0)
+				saveMeasurement({
+					date: todayISO(),
+					shoulders: shouldersCm,
+					waist: waistCm,
+					weightKg,
+				});
 			await completeOnboarding(profile, unit);
 		} finally {
 			setSaving(false);
@@ -122,7 +166,8 @@ export default function Onboarding() {
 					))}
 				</View>
 				<T variant="label" style={{ letterSpacing: 0 }}>
-					{String(step + 1).padStart(2, "0")}/05
+					{String(step + 1).padStart(2, "0")}/
+					{String(STEPS.length).padStart(2, "0")}
 				</T>
 			</View>
 
@@ -151,20 +196,6 @@ export default function Onboarding() {
 							returnKeyType="done"
 							style={{ marginTop: 24 }}
 						/>
-						<View style={{ marginTop: 20, gap: 8 }}>
-							<T variant="label">Gender</T>
-							<View style={{ flexDirection: "row", gap: 8 }}>
-								{(["male", "female", "other"] as Gender[]).map((g) => (
-									<Chip
-										key={g}
-										label={g[0]?.toUpperCase() + g.slice(1)}
-										selected={gender === g}
-										onPress={() => setGender(g)}
-										style={{ flex: 1 }}
-									/>
-								))}
-							</View>
-						</View>
 					</>
 				)}
 
@@ -287,7 +318,85 @@ export default function Onboarding() {
 
 				{step === 2 && (
 					<>
-						<Headline text="How do you split your week" mark="?" />
+						<Headline text="Where is your V today" mark="?" />
+						<T style={styles.sub}>
+							Your shoulder-to-waist ratio is the number Adonis helps you move.
+							A tape measure takes a minute — or skip and add it later.
+						</T>
+						<View style={{ flexDirection: "row", gap: 10, marginTop: 22 }}>
+							<Field
+								style={{ flex: 1 }}
+								label={`Shoulders (${unit === "kg" ? "cm" : "in"})`}
+								value={shouldersText}
+								onChangeText={setShouldersText}
+								keyboardType="decimal-pad"
+								placeholder={unit === "kg" ? "120" : "47"}
+							/>
+							<Field
+								style={{ flex: 1 }}
+								label={`Waist (${unit === "kg" ? "cm" : "in"})`}
+								value={waistText}
+								onChangeText={setWaistText}
+								keyboardType="decimal-pad"
+								placeholder={unit === "kg" ? "82" : "32"}
+							/>
+						</View>
+						<T variant="small" style={{ marginTop: 10 }}>
+							Shoulders: around the widest point over the deltoids, arms
+							relaxed. Waist: at the navel, after a normal breath out.
+						</T>
+						<View
+							style={[
+								styles.splitCard,
+								{ marginTop: 18, alignItems: "center" },
+							]}
+						>
+							<T variant="label">SHOULDER : WAIST</T>
+							<T
+								style={{
+									fontFamily: fonts.monoBold,
+									fontSize: 40,
+									lineHeight: 46,
+									color: ratio > 0 ? colors.text : colors.faint,
+								}}
+							>
+								{ratio > 0 ? ratio.toFixed(2) : "—"}
+							</T>
+							<T variant="small">
+								{ratio > 0
+									? `${stageOf(ratio).name} · goal ${IDEAL_RATIO}`
+									: `Goal ${IDEAL_RATIO}`}
+							</T>
+							<View style={{ width: "100%" }}>
+								<VTaperFigure ratio={ratio} ideal={IDEAL_RATIO} height={150} />
+							</View>
+						</View>
+					</>
+				)}
+
+				{step === 3 && (
+					<>
+						<Headline text="Pick your program" mark="." />
+						<View style={{ gap: 8, marginTop: 20 }}>
+							<T variant="label">Training age</T>
+							<View style={{ flexDirection: "row", gap: 8 }}>
+								{(
+									[
+										["beginner", "< 1 yr"],
+										["intermediate", "1–3 yrs"],
+										["advanced", "3+ yrs"],
+									] as [Experience, string][]
+								).map(([value, label]) => (
+									<Chip
+										key={value}
+										label={label}
+										selected={experience === value}
+										onPress={() => pickExperience(value)}
+										style={{ flex: 1 }}
+									/>
+								))}
+							</View>
+						</View>
 						<View style={{ gap: 8, marginTop: 20 }}>
 							{SPLITS.map((s) => {
 								const selected = split === s.id;
@@ -311,6 +420,14 @@ export default function Onboarding() {
 									>
 										<Row gap={12}>
 											<View style={{ flex: 1, gap: 2 }}>
+												{s.id === recommendedSplit(experience) ? (
+													<T
+														variant="label"
+														style={{ color: colors.accent, fontSize: 10 }}
+													>
+														RECOMMENDED
+													</T>
+												) : null}
 												<T variant="heading">{s.name}</T>
 												<T variant="small">{s.description}</T>
 											</View>
@@ -364,38 +481,17 @@ export default function Onboarding() {
 					</>
 				)}
 
-				{step === 3 && (
+				{step === 4 && (
 					<>
 						<Headline text="What are you training for" mark="?" />
-						<View style={{ gap: 8, marginTop: 22 }}>
-							<T variant="label">Experience</T>
-							<View style={{ flexDirection: "row", gap: 8 }}>
-								{(
-									[
-										["beginner", "New"],
-										["intermediate", "1–3 yrs"],
-										["advanced", "3+ yrs"],
-									] as [Experience, string][]
-								).map(([value, label]) => (
-									<Chip
-										key={value}
-										label={label}
-										selected={experience === value}
-										onPress={() => setExperience(value)}
-										style={{ flex: 1 }}
-									/>
-								))}
-							</View>
-						</View>
 						<View style={{ gap: 8, marginTop: 20 }}>
 							<T variant="label">Main goal</T>
 							<View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
 								{(
 									[
-										["muscle", "Build muscle"],
-										["strength", "Get stronger"],
-										["fat_loss", "Lose fat"],
-										["general", "Stay fit"],
+										["muscle", "Build the V — add size"],
+										["fat_loss", "Cut the waist"],
+										["general", "Both — recomp"],
 									] as [Goal, string][]
 								).map(([value, label]) => (
 									<Chip
@@ -403,7 +499,7 @@ export default function Onboarding() {
 										label={label}
 										selected={goal === value}
 										onPress={() => setGoal(value)}
-										style={{ flexBasis: "47%", flexGrow: 1 }}
+										style={{ flexBasis: "100%" }}
 									/>
 								))}
 							</View>
@@ -425,7 +521,7 @@ export default function Onboarding() {
 					</>
 				)}
 
-				{step === 4 && (
+				{step === 5 && (
 					<>
 						<Headline text="When should we nudge you" mark="?" />
 						<T style={styles.sub}>

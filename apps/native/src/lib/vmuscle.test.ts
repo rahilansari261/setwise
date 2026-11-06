@@ -68,6 +68,33 @@ const cases: [string, Parameters<typeof groupOf>[0], string | null][] = [
 	],
 	["plank → Core", { name: "Plank", category: "Core", target: "abs" }, "Core"],
 	[
+		"rear lateral raise is rear, not side",
+		{
+			name: "Cable Seated Rear Lateral Raise",
+			category: "Shoulders",
+			target: "delts",
+		},
+		"Rear delts",
+	],
+	[
+		"front lateral raise is front",
+		{
+			name: "Band Front Lateral Raise",
+			category: "Shoulders",
+			target: "delts",
+		},
+		"Front delts",
+	],
+	[
+		"cross-over 'revers fly' (dataset typo) is rear",
+		{
+			name: "Cable Cross-Over Revers Fly",
+			category: "Shoulders",
+			target: "delts",
+		},
+		"Rear delts",
+	],
+	[
 		"treadmill → none",
 		{
 			name: "Treadmill Running",

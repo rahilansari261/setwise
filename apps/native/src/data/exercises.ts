@@ -225,6 +225,14 @@ export const DEFAULT_EXERCISES: Exercise[] = [
 		metricType: "weight_reps",
 	},
 	{
+		id: "lean-away-lateral-raise",
+		name: "Lean-Away Cable Lateral Raise",
+		category: "Shoulders",
+		metricType: "weight_reps",
+		equipment: "Cable",
+		target: "delts",
+	},
+	{
 		id: "face-pull",
 		name: "Face Pull",
 		category: "Shoulders",
@@ -313,6 +321,16 @@ export const DEFAULT_EXERCISES: Exercise[] = [
 
 	// CORE
 	{ id: "plank", name: "Plank", category: "Core", metricType: "time_only" },
+	{
+		id: "stomach-vacuum",
+		name: "Stomach Vacuum",
+		category: "Core",
+		metricType: "time_only",
+		equipment: "Bodyweight",
+		target: "abs",
+		notes:
+			"Breathe out fully, pull the belly button to the spine and hold. Trains the deep core for a tighter waist.",
+	},
 	{
 		id: "hanging-leg-raise",
 		name: "Hanging Leg Raise",

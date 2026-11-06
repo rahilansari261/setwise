@@ -539,6 +539,30 @@ const H: Record<string, string> = {
 	"this week · sets per muscle ›": "इस हफ़्ते · हर मसल के सेट ›",
 	"ranges are common hypertrophy guidance (roughly 10–20 hard sets per muscle per week), not a prescription. warm-up sets don't count.":
 		"रेंज आम हाइपरट्रॉफ़ी सलाह (हफ़्ते में हर मसल के लगभग 10–20 कठिन सेट) पर आधारित हैं, कोई नुस्ख़ा नहीं। वार्म-अप सेट नहीं गिने जाते।",
+	// onboarding · v-taper
+	"where is your v today": "आज आपका V कहाँ है",
+	"your shoulder-to-waist ratio is the number adonis helps you move. a tape measure takes a minute — or skip and add it later.":
+		"कंधे-कमर का अनुपात ही वह नंबर है जिसे Adonis बढ़ाने में मदद करता है। टेप से एक मिनट लगेगा — या अभी छोड़कर बाद में जोड़ें।",
+	"shoulders: around the widest point over the deltoids, arms relaxed. waist: at the navel, after a normal breath out.":
+		"कंधे: डेल्टॉइड के ऊपर सबसे चौड़ी जगह से, बाँहें ढीली। कमर: नाभि पर, सामान्य साँस छोड़ने के बाद।",
+	"shoulders: tape around the widest point over the deltoids, arms relaxed. waist: at the navel, relaxed breath out.":
+		"कंधे: डेल्टॉइड के ऊपर सबसे चौड़ी जगह पर टेप, बाँहें ढीली। कमर: नाभि पर, आराम से साँस छोड़कर।",
+	"pick your program": "अपना प्रोग्राम चुनें",
+	"training age": "ट्रेनिंग का अनुभव",
+	"< 1 yr": "1 साल से कम",
+	"1–3 yrs": "1–3 साल",
+	"3+ yrs": "3+ साल",
+	recommended: "सुझाया गया",
+	"build the v — add size": "V बनाएँ — साइज़ बढ़ाएँ",
+	"cut the waist": "कमर घटाएँ",
+	"both — recomp": "दोनों — रीकॉम्प",
+	"v-taper picks": "V-taper चुनिंदा",
+	"best in your first year": "पहले साल के लिए सबसे अच्छा",
+	"width day + shoulder day": "चौड़ाई का दिन + कंधों का दिन",
+	"shoulder-led push, lat-led pull": "कंधा-प्रधान पुश, लैट-प्रधान पुल",
+	"for experienced lifters": "अनुभवी लिफ़्टर्स के लिए",
+	custom: "कस्टम",
+	"build your own routine later": "अपना रूटीन बाद में बनाएँ",
 	// cloud sync
 	"cloud sync": "क्लाउड सिंक",
 	"cloud sync & backup": "क्लाउड सिंक और बैकअप",
@@ -650,6 +674,8 @@ export const HI_PATTERNS: [RegExp, (...m: string[]) => string][] = [
 	[/^(.+): (\d+) more sets?$/, (g, n) => `${g}: ${n} सेट और`],
 	[/^Waist down (.+) cm(.*)$/, (n, r) => `कमर ${n} cm घटाएँ${r}`],
 	[/^TO REACH (.+)$/, (n) => `${n} तक पहुँचने के लिए`],
+	[/^(\d+) days$/, (n) => `${n} दिन`],
+	[/^goal (.+)$/i, (x) => `लक्ष्य ${x}`],
 	[/^Delete (.+)\?$/, (x) => `${x} हटाएँ?`],
 	[/^Remove (.+)\?$/, (x) => `${x} हटाएँ?`],
 	[/^Added (.+)$/, (x) => `${x} जुड़ गया`],

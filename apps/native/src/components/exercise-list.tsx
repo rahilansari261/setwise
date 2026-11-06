@@ -21,6 +21,7 @@ import {
 	T,
 } from "@/src/components/ui";
 import { CATEGORIES, CATEGORY_COLOR } from "@/src/data/exercises";
+import { PICK_ORDER } from "@/src/data/vtaper-picks";
 import { EQUIPMENT, equipmentOf } from "@/src/lib/sets";
 import { extraId, useExtras } from "@/src/state/extras";
 import { useT } from "@/src/state/i18n";
@@ -55,7 +56,9 @@ export function ExerciseList({
 	const [query, setQuery] = useState("");
 	const [category, setCategory] = useState<Category | "All">("All");
 	const [equipment, setEquipment] = useState<Equipment | "All">("All");
-	const [scope, setScope] = useState<"all" | "favorites" | string>("all");
+	const [scope, setScope] = useState<"vtaper" | "all" | "favorites" | string>(
+		"vtaper",
+	);
 	const [menuFor, setMenuFor] = useState<Exercise | null>(null);
 	const [foldersOpen, setFoldersOpen] = useState(false);
 	const [newFolder, setNewFolder] = useState("");
@@ -69,9 +72,12 @@ export function ExerciseList({
 	const filtered = useMemo(() => {
 		const q = query.trim().toLowerCase();
 		const inFolder = folder ? new Set(folder.exerciseIds) : null;
+		// The short list is only the starting view: typing a search looks through everything.
+		const picksOnly = scope === "vtaper" && !q;
 		return exercises
 			.filter(
 				(e) =>
+					(!picksOnly || PICK_ORDER.has(e.id) || e.isCustom) &&
 					(category === "All" || e.category === category) &&
 					(equipment === "All" || equipmentOf(e) === equipment) &&
 					(scope !== "favorites" || favorites.has(e.id)) &&
@@ -82,6 +88,9 @@ export function ExerciseList({
 			)
 			.sort(
 				(a, b) =>
+					(picksOnly
+						? (PICK_ORDER.get(a.id) ?? 999) - (PICK_ORDER.get(b.id) ?? 999)
+						: 0) ||
 					Number(favorites.has(b.id)) - Number(favorites.has(a.id)) ||
 					Number(Boolean(b.isCustom)) - Number(Boolean(a.isCustom)) ||
 					a.name.localeCompare(b.name),
@@ -159,6 +168,12 @@ export function ExerciseList({
 							showsHorizontalScrollIndicator={false}
 							contentContainerStyle={{ gap: 6, alignItems: "center" }}
 						>
+							<Chip
+								label="V-taper picks"
+								selected={scope === "vtaper"}
+								onPress={() => setScope("vtaper")}
+								style={{ minHeight: 34 }}
+							/>
 							<Chip
 								label="All"
 								selected={scope === "all"}

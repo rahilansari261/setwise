@@ -56,10 +56,11 @@ const BY_TARGET: Record<string, VGroup | null> = {
 	"cardiovascular system": null,
 };
 
-const SIDE =
-	/lateral raise|side raise|side lateral|upright row|lateral (?:dumbbell )?raise/i;
+// Checked in this order: "rear lateral raise" and "front lateral raise" also contain "lateral raise".
 const REAR =
-	/rear delt|reverse (?:pec|fly|flye)|face pull|rear lateral|bent[- ]over lateral|reverse peck/i;
+	/rear delt|rear lateral|reverse (?:pec|fly|flye)|revers fly|face pull|bent[- ]over lateral|reverse peck/i;
+const FRONT = /front raise|front lateral/i;
+const SIDE = /lateral raise|side raise|side lateral|upright row|y-raise/i;
 const LATS = /pull-?down|pull-?up|chin-?up|\blat\b|lat pull/i;
 
 /** Which V-taper group an exercise trains, or null for cardio and the like. */
@@ -69,8 +70,9 @@ export function groupOf(ex: {
 	target?: string;
 }): VGroup | null {
 	const name = ex.name;
-	if (SIDE.test(name)) return "Side delts";
 	if (REAR.test(name)) return "Rear delts";
+	if (FRONT.test(name)) return "Front delts";
+	if (SIDE.test(name)) return "Side delts";
 	if (ex.target === "delts" || (!ex.target && ex.category === "Shoulders"))
 		return "Front delts";
 	if (LATS.test(name)) return "Lats";

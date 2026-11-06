@@ -49,7 +49,10 @@ const KV = {
 	profile: "profile",
 	settings: "settings",
 	activeRoutine: "active_routine",
+	programsSeeded: "programs_seeded",
 } as const;
+/** Bump when DEFAULT_ROUTINES gains programs that existing installs should receive. */
+const PROGRAMS_VERSION = 1;
 const SAVE_DELAY_MS = 400;
 
 export interface LastPerformance {
@@ -120,6 +123,18 @@ function useWorkoutStoreValue() {
 		if (loadedRoutines.length === 0) {
 			loadedRoutines = DEFAULT_ROUTINES;
 			await db.silentWrite(() => db.saveRoutines(loadedRoutines));
+			await db.setKV(KV.programsSeeded, PROGRAMS_VERSION);
+		} else if (
+			(await db.getKV<number>(KV.programsSeeded)) !== PROGRAMS_VERSION
+		) {
+			// Installs from before the V-taper programs get them added once; their own routines stay.
+			const have = new Set(loadedRoutines.map((x) => x.id));
+			loadedRoutines = [
+				...DEFAULT_ROUTINES.filter((x) => !have.has(x.id)),
+				...loadedRoutines,
+			];
+			await db.silentWrite(() => db.saveRoutines(loadedRoutines));
+			await db.setKV(KV.programsSeeded, PROGRAMS_VERSION);
 		}
 		workoutsRef.current = w;
 		setProfile(p);
@@ -745,6 +760,7 @@ function useWorkoutStoreValue() {
 		pendingSaves.current.clear();
 		await db.wipeAll();
 		await db.silentWrite(() => db.saveRoutines(DEFAULT_ROUTINES));
+		await db.setKV(KV.programsSeeded, PROGRAMS_VERSION);
 		workoutsRef.current = {};
 		setWorkouts({});
 		setCustomExercises([]);
