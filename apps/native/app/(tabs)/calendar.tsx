@@ -13,7 +13,7 @@ import {
 	todayISO,
 	toISO,
 } from "@/src/lib/dates";
-import { dayStats, hasLogged } from "@/src/lib/stats";
+import { dayStats, hasLogged, setSummary } from "@/src/lib/stats";
 import { useExtras } from "@/src/state/extras";
 import { useWorkouts } from "@/src/state/workout-store";
 import { colors, fonts } from "@/src/theme";
@@ -22,7 +22,7 @@ const HEAD = ["M", "T", "W", "T", "F", "S", "S"];
 
 export default function CalendarScreen() {
 	const router = useRouter();
-	const { workouts, setCurrentDate, settings } = useWorkouts();
+	const { workouts, setCurrentDate, settings, exerciseById } = useWorkouts();
 	const { planned } = useExtras();
 	const today = todayISO();
 	const [cursor, setCursor] = useState(() => {
@@ -217,8 +217,10 @@ export default function CalendarScreen() {
 								`${stats.exercises} exercise${stats.exercises > 1 ? "s" : ""}`}
 						</T>
 						<T variant="small" style={{ marginTop: 2 }}>
-							{stats.done} {stats.done === 1 ? "set" : "sets"} ·{" "}
-							{fmt(stats.volume, 0)} {settings.unit}
+							{stats.done} {stats.done === 1 ? "set" : "sets"}
+							{stats.volume > 0
+								? ` · ${fmt(stats.volume, 0)} ${settings.unit}`
+								: ""}
 						</T>
 						<View style={{ marginTop: 10, gap: 4 }}>
 							{day?.exercises.map((we) => (
@@ -243,7 +245,15 @@ export default function CalendarScreen() {
 											color: colors.muted,
 										}}
 									>
-										{we.sets.filter((s) => s.completed).length}/{we.sets.length}
+										{(() => {
+											const done = we.sets.filter((s) => s.completed);
+											const type = exerciseById.get(we.exerciseId)?.metricType;
+											const top = done.at(-1);
+											// Timed and distance work reads better as its own numbers than as "n/m sets".
+											return top && type && type !== "weight_reps"
+												? setSummary(top, type, settings.unit)
+												: `${done.length}/${we.sets.length}`;
+										})()}
 									</T>
 								</Row>
 							))}
