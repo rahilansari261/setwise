@@ -1,7 +1,6 @@
 import { type BottomTabBarProps, Tabs } from "expo-router/js-tabs";
 import {
 	BookOpen,
-	Calculator,
 	Calendar,
 	Dumbbell,
 	type LucideIcon,
@@ -19,7 +18,6 @@ const ICONS: Record<string, { icon: LucideIcon; label: string }> = {
 	calendar: { icon: Calendar, label: "Calendar" },
 	exercises: { icon: BookOpen, label: "Exercises" },
 	progress: { icon: TrendingUp, label: "Progress" },
-	tools: { icon: Calculator, label: "Tools" },
 };
 
 function TabBar({ state, navigation }: BottomTabBarProps) {
@@ -84,7 +82,6 @@ export default function TabsLayout() {
 			<Tabs.Screen name="calendar" />
 			<Tabs.Screen name="exercises" />
 			<Tabs.Screen name="progress" />
-			<Tabs.Screen name="tools" />
 		</Tabs>
 	);
 }

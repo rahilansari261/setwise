@@ -145,6 +145,8 @@ export interface Measurement {
 	weightKg?: number;
 	bodyFat?: number;
 	/** Circumferences in cm. */
+	/** Widest point across the shoulders (around the deltoids), cm. */
+	shoulders?: number;
 	chest?: number;
 	waist?: number;
 	hips?: number;

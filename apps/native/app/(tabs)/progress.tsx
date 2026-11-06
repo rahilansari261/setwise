@@ -4,9 +4,7 @@ import {
 	CalendarRange,
 	Camera,
 	HeartPulse,
-	Layers,
 	type LucideIcon,
-	Medal,
 	Ruler,
 	Target,
 } from "lucide-react-native";
@@ -15,11 +13,19 @@ import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import { ExerciseProgress } from "@/src/components/exercise-progress";
 import { Chip, ProBadge, Screen, T } from "@/src/components/ui";
+import { VTaperFigure } from "@/src/components/vtaper-figure";
 import { CATEGORY_COLOR } from "@/src/data/exercises";
 import { fmt } from "@/src/lib/calc";
 import { addDays, shortDate, todayISO } from "@/src/lib/dates";
 import type { ProFeature } from "@/src/lib/pro";
 import { setsByCategory } from "@/src/lib/stats";
+import {
+	IDEAL_RATIO,
+	progressToIdeal,
+	stageOf,
+	vtaperHistory,
+} from "@/src/lib/vtaper";
+import { useExtras } from "@/src/state/extras";
 import { useT } from "@/src/state/i18n";
 import { usePremium, useProGate } from "@/src/state/premium";
 import { useWorkouts } from "@/src/state/workout-store";
@@ -46,18 +52,11 @@ const TILES: {
 	},
 	{ href: "/goals", label: "Goals", icon: Target, feature: "goals" },
 	{
-		href: "/strength",
-		label: "Strength rank",
-		icon: Medal,
-		feature: "strength",
-	},
-	{
 		href: "/recovery",
 		label: "Recovery",
 		icon: HeartPulse,
 		feature: "recovery",
 	},
-	{ href: "/zones", label: "Training zones", icon: Layers, feature: "zones" },
 	{
 		href: "/recap",
 		label: "Monthly recap",
@@ -72,6 +71,9 @@ export default function Progress() {
 	const { isPro } = usePremium();
 	const gate = useProGate();
 	const { workouts, personalRecords, settings } = useWorkouts();
+	const { measurements } = useExtras();
+	const vt = vtaperHistory(measurements).at(-1);
+	const prevVt = vtaperHistory(measurements).at(-2);
 
 	// Exercises with history, most recently trained first.
 	const trained = useMemo(() => {
@@ -107,6 +109,48 @@ export default function Progress() {
 			<T variant="display" style={{ marginTop: 4 }}>
 				{tr("Your lifts")}
 			</T>
+
+			<Pressable
+				accessibilityRole="button"
+				accessibilityLabel="V-taper"
+				onPress={() => router.push("/vtaper")}
+				style={({ pressed }) => [styles.vt, pressed && { opacity: 0.8 }]}
+			>
+				<View style={{ flex: 1, gap: 4 }}>
+					<T variant="label">V-TAPER</T>
+					<T
+						style={{ fontFamily: fonts.monoBold, fontSize: 34, lineHeight: 38 }}
+					>
+						{vt ? vt.ratio.toFixed(2) : "—"}
+					</T>
+					<T variant="small">
+						{vt
+							? `${stageOf(vt.ratio).name} · goal ${IDEAL_RATIO}${
+									prevVt
+										? ` · ${vt.ratio >= prevVt.ratio ? "+" : "−"}${Math.abs(vt.ratio - prevVt.ratio).toFixed(2)}`
+										: ""
+								}`
+							: "Add shoulders and waist to see your score"}
+					</T>
+					<View style={styles.vtTrack}>
+						<View
+							style={[
+								styles.vtFill,
+								{
+									width: `${Math.round(progressToIdeal(vt?.ratio ?? 0) * 100)}%`,
+								},
+							]}
+						/>
+					</View>
+				</View>
+				<View style={{ width: 96 }}>
+					<VTaperFigure
+						ratio={vt?.ratio ?? 0}
+						ideal={IDEAL_RATIO}
+						height={110}
+					/>
+				</View>
+			</Pressable>
 
 			<View style={styles.tiles}>
 				{TILES.map((t) => {
@@ -235,6 +279,24 @@ export default function Progress() {
 }
 
 const styles = StyleSheet.create({
+	vt: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 12,
+		marginTop: 16,
+		padding: 16,
+		borderRadius: 20,
+		borderWidth: 1.5,
+		borderColor: colors.accent,
+		backgroundColor: colors.surface,
+	},
+	vtTrack: {
+		height: 6,
+		borderRadius: 3,
+		backgroundColor: colors.hairline,
+		marginTop: 6,
+	},
+	vtFill: { height: 6, borderRadius: 3, backgroundColor: colors.accent },
 	tiles: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 16 },
 	tile: {
 		width: "48.5%",

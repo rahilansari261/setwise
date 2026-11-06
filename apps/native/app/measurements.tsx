@@ -27,6 +27,7 @@ const FIELDS: { key: FieldKey; label: string; unit: "weight" | "%" | "cm" }[] =
 	[
 		{ key: "weightKg", label: "Body weight", unit: "weight" },
 		{ key: "bodyFat", label: "Body fat", unit: "%" },
+		{ key: "shoulders", label: "Shoulders", unit: "cm" },
 		{ key: "chest", label: "Chest", unit: "cm" },
 		{ key: "waist", label: "Waist", unit: "cm" },
 		{ key: "hips", label: "Hips", unit: "cm" },

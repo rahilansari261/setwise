@@ -111,6 +111,10 @@ function RootNavigator() {
 					options={{ animation: "slide_from_right" }}
 				/>
 				<Stack.Screen
+					name="vtaper"
+					options={{ animation: "slide_from_right" }}
+				/>
+				<Stack.Screen
 					name="paywall"
 					options={{ animation: "slide_from_bottom" }}
 				/>
@@ -127,15 +131,7 @@ function RootNavigator() {
 					options={{ animation: "slide_from_right" }}
 				/>
 				<Stack.Screen
-					name="strength"
-					options={{ animation: "slide_from_right" }}
-				/>
-				<Stack.Screen
 					name="recovery"
-					options={{ animation: "slide_from_right" }}
-				/>
-				<Stack.Screen
-					name="zones"
 					options={{ animation: "slide_from_right" }}
 				/>
 				<Stack.Screen

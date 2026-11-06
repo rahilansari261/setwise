@@ -1,5 +1,9 @@
 /** Every feature that needs Setwise Pro. The paywall lists these, `useProGate` checks them. */
 export const PRO_FEATURES = {
+	vtaperTrend: {
+		title: "V-taper trend",
+		blurb: "Track your shoulder-to-waist ratio over time.",
+	},
 	cloudSync: {
 		title: "Cloud sync & backup",
 		blurb: "Your workouts stay in sync across phones and survive a lost one.",
@@ -36,17 +40,9 @@ export const PRO_FEATURES = {
 		title: "Goals",
 		blurb: "Lift, bodyweight and weekly-workout targets.",
 	},
-	strength: {
-		title: "Strength ranking",
-		blurb: "See your level on the big lifts.",
-	},
 	recovery: {
 		title: "Muscle recovery",
 		blurb: "Know which muscles are ready to train.",
-	},
-	zones: {
-		title: "Training zones",
-		blurb: "Strength, size and endurance split of your sets.",
 	},
 	recap: {
 		title: "Monthly recap",
