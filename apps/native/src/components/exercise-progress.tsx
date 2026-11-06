@@ -3,7 +3,7 @@ import { StyleSheet, View } from "react-native";
 
 import { LineChart } from "@/src/components/line-chart";
 import { Chip, T } from "@/src/components/ui";
-import { fmt } from "@/src/lib/calc";
+import { distanceUnit, fmt, fmtSetTime } from "@/src/lib/calc";
 import {
 	addDays,
 	fromISO,
@@ -15,10 +15,12 @@ import {
 	exerciseSessions,
 	metricValue,
 	type ProgressMetric,
+	setSummary,
 } from "@/src/lib/stats";
 import { usePremium, useProGate } from "@/src/state/premium";
 import { useWorkouts } from "@/src/state/workout-store";
 import { colors, fonts } from "@/src/theme";
+import type { MetricType, Unit } from "@/src/types";
 
 const RANGES = [
 	{ key: "1M", days: 30 },
@@ -31,12 +33,53 @@ const METRIC_LABEL: Record<ProgressMetric, string> = {
 	e1rm: "ESTIMATED 1RM · EPLEY",
 	weight: "HEAVIEST SET",
 	volume: "SESSION VOLUME",
+	reps: "MOST REPS IN A SET",
+	time: "LONGEST SET",
+	distance: "LONGEST DISTANCE",
 };
 
+/** Which metrics make sense for an exercise type; the first one is the default. */
+const METRICS_FOR: Record<MetricType, ProgressMetric[]> = {
+	weight_reps: ["e1rm", "weight", "volume"],
+	reps_only: ["reps"],
+	time_only: ["time"],
+	distance_time: ["distance", "time"],
+};
+
+const METRIC_CHIP: Record<ProgressMetric, string> = {
+	e1rm: "e1RM",
+	weight: "Max weight",
+	volume: "Volume",
+	reps: "Reps",
+	time: "Time",
+	distance: "Distance",
+};
+
+function formatMetric(value: number, metric: ProgressMetric, unit: Unit) {
+	const sign = value < 0 ? "−" : "";
+	const v = Math.abs(value);
+	if (metric === "time") return `${sign}${fmtSetTime(v)}`;
+	if (metric === "reps") return `${sign}${fmt(v, 0)}`;
+	if (metric === "distance") return `${sign}${fmt(v, 2)}`;
+	return `${sign}${fmt(v, metric === "volume" ? 0 : 1)}`;
+}
+
+function metricUnit(metric: ProgressMetric, unit: Unit) {
+	if (metric === "time") return "";
+	if (metric === "reps") return "reps";
+	if (metric === "distance") return distanceUnit(unit);
+	return unit;
+}
+
 export function ExerciseProgress({ exerciseId }: { exerciseId: string }) {
-	const { workouts, settings, personalRecords } = useWorkouts();
+	const { workouts, settings, personalRecords, exerciseById } = useWorkouts();
 	const [range, setRange] = useState<(typeof RANGES)[number]["key"]>("3M");
-	const [metric, setMetric] = useState<ProgressMetric>("e1rm");
+	const [picked, setMetric] = useState<ProgressMetric>("e1rm");
+	const metricType = exerciseById.get(exerciseId)?.metricType ?? "weight_reps";
+	const metricChoices = METRICS_FOR[metricType];
+	const metric = metricChoices.includes(picked)
+		? picked
+		: (metricChoices[0] ?? "e1rm");
 	const unit = settings.unit;
 	const { isPro } = usePremium();
 	const gate = useProGate();
@@ -53,7 +96,8 @@ export function ExerciseProgress({ exerciseId }: { exerciseId: string }) {
 	const values = sessions.map((s) => metricValue(s, metric));
 	const latest = values.at(-1) ?? 0;
 	const delta = values.length > 1 ? latest - (values[0] ?? 0) : 0;
-	const pr = personalRecords[exerciseId];
+	const pr =
+		metricType === "weight_reps" ? personalRecords[exerciseId] : undefined;
 	const totalSets = sessions.reduce((n, s) => n + s.sets, 0);
 
 	if (all.length === 0) {
@@ -72,26 +116,29 @@ export function ExerciseProgress({ exerciseId }: { exerciseId: string }) {
 
 	return (
 		<View>
-			<View style={{ flexDirection: "row", gap: 6, marginTop: 4 }}>
-				{(["e1rm", "weight", "volume"] as ProgressMetric[]).map((m) => (
-					<Chip
-						key={m}
-						label={
-							m === "e1rm" ? "e1RM" : m === "weight" ? "Max weight" : "Volume"
-						}
-						selected={metric === m}
-						onPress={() =>
-							m === "e1rm"
-								? setMetric(m)
-								: gate("advancedCharts", () => setMetric(m))
-						}
-						style={[
-							{ minHeight: 36, flex: 1, paddingHorizontal: 6 },
-							m !== "e1rm" && !isPro && { opacity: 0.55 },
-						]}
-					/>
-				))}
-			</View>
+			{metricChoices.length > 1 ? (
+				<View style={{ flexDirection: "row", gap: 6, marginTop: 4 }}>
+					{metricChoices.map((m) => {
+						const free = m === metricChoices[0] || metricType !== "weight_reps";
+						return (
+							<Chip
+								key={m}
+								label={METRIC_CHIP[m]}
+								selected={metric === m}
+								onPress={() =>
+									free
+										? setMetric(m)
+										: gate("advancedCharts", () => setMetric(m))
+								}
+								style={[
+									{ minHeight: 36, flex: 1, paddingHorizontal: 6 },
+									!free && !isPro && { opacity: 0.55 },
+								]}
+							/>
+						);
+					})}
+				</View>
+			) : null}
 
 			<T variant="label" style={{ marginTop: 18 }}>
 				{METRIC_LABEL[metric]}
@@ -110,12 +157,12 @@ export function ExerciseProgress({ exerciseId }: { exerciseId: string }) {
 					adjustsFontSizeToFit
 					style={{ flexShrink: 1 }}
 				>
-					{fmt(latest, metric === "volume" ? 0 : 1)}
+					{formatMetric(latest, metric, unit)}
 				</T>
 				<T
 					style={{ fontFamily: fonts.mono, fontSize: 16, color: colors.muted }}
 				>
-					{unit}
+					{metricUnit(metric, unit)}
 				</T>
 				{delta !== 0 ? (
 					<View
@@ -135,7 +182,7 @@ export function ExerciseProgress({ exerciseId }: { exerciseId: string }) {
 							}}
 						>
 							{delta > 0 ? "+" : ""}
-							{fmt(delta, metric === "volume" ? 0 : 1)} · {range}
+							{formatMetric(delta, metric, unit)} · {range}
 						</T>
 					</View>
 				) : null}
@@ -168,11 +215,15 @@ export function ExerciseProgress({ exerciseId }: { exerciseId: string }) {
 							values={values}
 							height={150}
 							formatTick={(v) =>
-								metric === "volume" && v >= 1000
-									? `${Math.round(v / 100) / 10}k`
-									: String(Math.round(v))
+								metric === "time"
+									? fmtSetTime(v)
+									: metric === "distance"
+										? fmt(v, 1)
+										: metric === "volume" && v >= 1000
+											? `${Math.round(v / 100) / 10}k`
+											: String(Math.round(v))
 							}
-							accessibilityLabel={`${METRIC_LABEL[metric]} over ${sessions.length} sessions, latest ${fmt(latest)} ${unit}`}
+							accessibilityLabel={`${METRIC_LABEL[metric]} over ${sessions.length} sessions, latest ${formatMetric(latest, metric, unit)} ${metricUnit(metric, unit)}`}
 						/>
 						{first && last ? (
 							<View
@@ -215,6 +266,19 @@ export function ExerciseProgress({ exerciseId }: { exerciseId: string }) {
 					/>
 					<Tile label={`SETS · ${range}`} value={String(totalSets)} />
 				</View>
+			) : metricType !== "weight_reps" ? (
+				<View style={styles.tiles}>
+					<Tile
+						label={`BEST ${METRIC_CHIP[metric].toUpperCase()}`}
+						value={formatMetric(
+							Math.max(0, ...all.map((x) => metricValue(x, metric))),
+							metric,
+							unit,
+						)}
+						suffix={metricUnit(metric, unit)}
+					/>
+					<Tile label={`SETS · ${range}`} value={String(totalSets)} />
+				</View>
 			) : null}
 
 			<T variant="label" style={{ marginTop: 20 }}>
@@ -234,9 +298,23 @@ export function ExerciseProgress({ exerciseId }: { exerciseId: string }) {
 							{shortDate(s.date).toUpperCase()}
 						</T>
 						<T style={[styles.recentText, { flex: 1 }]}>
-							{fmt(s.bestSet.weight)} × {s.bestSet.reps}
+							{metricType === "weight_reps"
+								? setSummary(s.bestSet, metricType, unit)
+								: metricType === "distance_time"
+									? setSummary(
+											{ weight: 0, reps: 0, ...s.bestDistanceSet },
+											metricType,
+											unit,
+										)
+									: setSummary(
+											{ weight: 0, reps: s.maxReps, timeSeconds: s.maxTime },
+											metricType,
+											unit,
+										)}
 						</T>
-						<T style={styles.recentText}>{fmt(s.e1rm)}</T>
+						{metricType === "weight_reps" ? (
+							<T style={styles.recentText}>{fmt(s.e1rm)}</T>
+						) : null}
 					</View>
 				))}
 		</View>
