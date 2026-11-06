@@ -1,5 +1,6 @@
 import { View } from "react-native";
 
+import { FillBar } from "@/src/components/motion";
 import { ProScreen } from "@/src/components/pro-screen";
 import { Card, Row, T } from "@/src/components/ui";
 import { plural } from "@/src/lib/calc";
@@ -70,9 +71,9 @@ export default function Recovery() {
 								marginTop: 10,
 							}}
 						>
-							<View
+							<FillBar
+								fraction={m.recovered}
 								style={{
-									width: `${Math.round(m.recovered * 100)}%`,
 									height: 8,
 									borderRadius: 4,
 									backgroundColor:

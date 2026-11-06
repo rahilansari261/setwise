@@ -393,6 +393,8 @@ const H: Record<string, string> = {
 		"सिर्फ़ तब बजता है जब ऐप बैकग्राउंड में हो",
 	"rest notification": "रेस्ट नोटिफ़िकेशन",
 	vibration: "वाइब्रेशन",
+	"logged sets, prs, the rest timer and taps":
+		"लॉग किए सेट, PR, रेस्ट टाइमर और टैप",
 	"workout reminders": "वर्कआउट रिमाइंडर",
 	hour: "घंटा",
 	minute: "मिनट",

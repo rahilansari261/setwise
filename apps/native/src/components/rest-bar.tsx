@@ -1,6 +1,8 @@
 import { Pause, Play } from "lucide-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
+import Animated, { FadeInDown, FadeOutDown } from "react-native-reanimated";
 
+import { FillBar } from "@/src/components/motion";
 import { T } from "@/src/components/ui";
 import { fmtDuration } from "@/src/lib/calc";
 import { useRestTimer } from "@/src/state/rest-timer";
@@ -11,7 +13,12 @@ export function RestBar() {
 	const timer = useRestTimer();
 	if (!timer.active) return null;
 	return (
-		<View style={styles.bar} accessibilityLiveRegion="polite">
+		<Animated.View
+			entering={FadeInDown.duration(220)}
+			exiting={FadeOutDown.duration(160)}
+			style={styles.bar}
+			accessibilityLiveRegion="polite"
+		>
 			<Pressable
 				accessibilityRole="button"
 				accessibilityLabel={
@@ -47,13 +54,14 @@ export function RestBar() {
 			>
 				<T style={styles.btnText}>Skip</T>
 			</Pressable>
-			<View
-				style={[
-					styles.progress,
-					{ width: `${Math.min(100, timer.progress * 100)}%` },
-				]}
+			{/* The timer ticks every 250 ms; a matching linear glide keeps the line moving smoothly. */}
+			<FillBar
+				fraction={timer.progress}
+				duration={250}
+				linear
+				style={styles.progress}
 			/>
-		</View>
+		</Animated.View>
 	);
 }
 

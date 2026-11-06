@@ -15,6 +15,7 @@ import { DEFAULT_ROUTINES, splitById } from "@/src/data/routines";
 import * as db from "@/src/db/database";
 import { convertDistance, convertWeight, estimate1RM } from "@/src/lib/calc";
 import { todayISO } from "@/src/lib/dates";
+import { setHapticsEnabled } from "@/src/lib/haptics";
 import { countsAsWork, setVolume } from "@/src/lib/sets";
 import type {
 	ActiveRoutine,
@@ -104,6 +105,11 @@ function useWorkoutStoreValue() {
 		null,
 	);
 	const [currentDate, setCurrentDate] = useState(todayISO);
+
+	// Every haptic in the app follows Settings › Vibration.
+	useEffect(() => {
+		setHapticsEnabled(settings.vibrationEnabled);
+	}, [settings.vibrationEnabled]);
 
 	// The ref is the synchronous source of truth so set actions can read their own result.
 	const workoutsRef = useRef<Record<string, WorkoutDay>>({});

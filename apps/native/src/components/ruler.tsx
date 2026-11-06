@@ -1,4 +1,3 @@
-import * as Haptics from "expo-haptics";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import {
 	type NativeScrollEvent,
@@ -9,6 +8,7 @@ import {
 } from "react-native";
 import Svg, { Path, Text as SvgText } from "react-native-svg";
 
+import { haptic } from "@/src/lib/haptics";
 import { colors, fonts } from "@/src/theme";
 
 const TICK = 10;
@@ -115,7 +115,7 @@ export function Ruler({
 		);
 		if (index === lastIndex.current) return;
 		lastIndex.current = index;
-		Haptics.selectionAsync().catch(() => {});
+		haptic.tick();
 		onChange(Math.round((min + index * step) * 100) / 100);
 	};
 

@@ -20,14 +20,29 @@ import {
 	type ViewStyle,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import Reanimated, {
+	Easing,
+	FadeInDown,
+	interpolateColor,
+	useAnimatedStyle,
+	useSharedValue,
+	withTiming,
+} from "react-native-reanimated";
 import {
 	SafeAreaView,
 	useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
+import { usePressScale } from "@/src/components/motion";
+import { haptic } from "@/src/lib/haptics";
 import { translate } from "@/src/lib/i18n";
 import { LocaleContext } from "@/src/lib/locale-context";
 import { colors, fonts, radius, TAP } from "@/src/theme";
+
+const AnimatedPressable = Reanimated.createAnimatedComponent(Pressable);
+const EASE_OUT = Easing.out(Easing.cubic);
+/** Sheets rise a little as they fade in. */
+const SHEET_IN = FadeInDown.duration(240).easing(EASE_OUT);
 
 /** Translates a string label for the current language; re-renders on language change. */
 function useTr() {
@@ -307,23 +322,27 @@ export function Button({
 			border: colors.dangerTint,
 		},
 	}[variant];
+	const press = usePressScale();
 	const iconEl = Icon ? (
 		<Icon size={18} color={palette.fg} strokeWidth={2.2} />
 	) : null;
 	return (
-		<Pressable
+		<AnimatedPressable
 			accessibilityRole="button"
 			onPress={onPress}
+			onPressIn={press.onPressIn}
+			onPressOut={press.onPressOut}
 			disabled={disabled || loading}
-			style={({ pressed }) => [
+			style={[
 				styles.button,
 				compact && { height: TAP, borderRadius: 12 },
 				{
 					backgroundColor: palette.bg,
 					borderColor: palette.border,
-					opacity: disabled ? 0.4 : pressed ? 0.8 : 1,
+					opacity: disabled ? 0.4 : 1,
 				},
 				style,
+				press.style,
 			]}
 		>
 			{loading ? (
@@ -345,7 +364,7 @@ export function Button({
 					{iconRight && iconEl}
 				</>
 			)}
-		</Pressable>
+		</AnimatedPressable>
 	);
 }
 
@@ -453,35 +472,82 @@ export function Segmented<T extends string>({
 	fill?: boolean;
 }) {
 	const tr = useTr();
+	// Where each segment sits, so the highlight can glide to the picked one.
+	const [boxes, setBoxes] = useState<Record<string, { x: number; w: number }>>(
+		{},
+	);
+	const box = boxes[value];
+	const bx = box?.x;
+	const bw = box?.w;
+	const x = useSharedValue(0);
+	const w = useSharedValue(0);
+	const placed = useRef(false);
+	useEffect(() => {
+		if (bx === undefined || bw === undefined) return;
+		if (!placed.current) {
+			placed.current = true;
+			x.set(bx);
+			w.set(bw);
+			return;
+		}
+		const cfg = { duration: 220, easing: EASE_OUT };
+		x.set(withTiming(bx, cfg));
+		w.set(withTiming(bw, cfg));
+	}, [bx, bw, x, w]);
+	const pill = useAnimatedStyle(() => ({
+		width: w.get(),
+		transform: [{ translateX: x.get() }],
+	}));
 	return (
 		<View style={[styles.segmented, style]}>
-			{options.map((o) => {
-				const active = o.value === value;
-				return (
-					<Pressable
-						key={o.value}
-						accessibilityRole="button"
-						accessibilityState={{ selected: active }}
-						onPress={() => onChange(o.value)}
-						style={[
-							styles.segment,
-							fill && { flex: 1 },
-							active && { backgroundColor: colors.control },
-						]}
-					>
-						<Text
-							maxFontSizeMultiplier={1.2}
-							style={{
-								fontFamily: fonts.mono,
-								fontSize: 11,
-								color: active ? colors.text : colors.muted,
+			<View style={[{ flexDirection: "row" }, fill && { flex: 1 }]}>
+				{box ? (
+					<Reanimated.View
+						pointerEvents="none"
+						style={[styles.segmentPill, pill]}
+					/>
+				) : null}
+				{options.map((o) => {
+					const active = o.value === value;
+					return (
+						<Pressable
+							key={o.value}
+							accessibilityRole="button"
+							accessibilityState={{ selected: active }}
+							onLayout={(e) => {
+								const { x: lx, width } = e.nativeEvent.layout;
+								setBoxes((b) =>
+									b[o.value]?.x === lx && b[o.value]?.w === width
+										? b
+										: { ...b, [o.value]: { x: lx, w: width } },
+								);
 							}}
+							onPress={() => {
+								if (active) return;
+								haptic.tick();
+								onChange(o.value);
+							}}
+							style={[
+								styles.segment,
+								fill && { flex: 1 },
+								// Until the segments are measured, the picked one gets a plain fill.
+								active && !box && { backgroundColor: colors.control },
+							]}
 						>
-							{tr(o.label)}
-						</Text>
-					</Pressable>
-				);
-			})}
+							<Text
+								maxFontSizeMultiplier={1.2}
+								style={{
+									fontFamily: fonts.mono,
+									fontSize: 11,
+									color: active ? colors.text : colors.muted,
+								}}
+							>
+								{tr(o.label)}
+							</Text>
+						</Pressable>
+					);
+				})}
+			</View>
 		</View>
 	);
 }
@@ -534,24 +600,22 @@ export function Stepper({
 }) {
 	const clamp = (v: number) =>
 		Math.min(max, Math.max(min, Math.round(v * 100) / 100));
+	const go = (v: number) => {
+		const next = clamp(v);
+		if (next === value) return;
+		haptic.tick();
+		onChange(next);
+	};
 	return (
 		<Row gap={6}>
-			<StepButton
-				label="Decrease"
-				sign="−"
-				onPress={() => onChange(clamp(value - step))}
-			/>
+			<StepButton label="Decrease" sign="−" onPress={() => go(value - step)} />
 			<View style={{ minWidth: 48, alignItems: "center" }}>
 				<T variant="mono" style={{ fontSize: 22 }}>
 					{format(value)}
 					{suffix ? <T variant="small"> {suffix}</T> : null}
 				</T>
 			</View>
-			<StepButton
-				label="Increase"
-				sign="+"
-				onPress={() => onChange(clamp(value + step))}
-			/>
+			<StepButton label="Increase" sign="+" onPress={() => go(value + step)} />
 		</Row>
 	);
 }
@@ -598,28 +662,44 @@ export function Toggle({
 	onChange: (v: boolean) => void;
 	label: string;
 }) {
+	const on = useSharedValue(value ? 1 : 0);
+	useEffect(() => {
+		on.set(withTiming(value ? 1 : 0, { duration: 180, easing: EASE_OUT }));
+	}, [value, on]);
+	const track = useAnimatedStyle(() => ({
+		backgroundColor: interpolateColor(
+			on.get(),
+			[0, 1],
+			[colors.surfaceRaised, colors.accent],
+		),
+		borderColor: interpolateColor(
+			on.get(),
+			[0, 1],
+			[colors.border, colors.accent],
+		),
+	}));
+	const knob = useAnimatedStyle(() => ({
+		transform: [{ translateX: on.get() * 18 }],
+		backgroundColor: interpolateColor(
+			on.get(),
+			[0, 1],
+			[colors.muted, colors.accentInk],
+		),
+	}));
 	return (
-		<Pressable
+		<AnimatedPressable
 			accessibilityRole="switch"
 			accessibilityLabel={label}
 			accessibilityState={{ checked: value }}
-			onPress={() => onChange(!value)}
+			onPress={() => {
+				haptic.toggle(!value);
+				onChange(!value);
+			}}
 			hitSlop={8}
-			style={[
-				styles.toggle,
-				value && { backgroundColor: colors.accent, borderColor: colors.accent },
-			]}
+			style={[styles.toggle, track]}
 		>
-			<View
-				style={[
-					styles.knob,
-					value && {
-						transform: [{ translateX: 18 }],
-						backgroundColor: colors.accentInk,
-					},
-				]}
-			/>
-		</Pressable>
+			<Reanimated.View style={[styles.knob, knob]} />
+		</AnimatedPressable>
 	);
 }
 
@@ -637,21 +717,28 @@ export function ListRow({
 	onPress?: () => void;
 	last?: boolean;
 }) {
-	const Wrapper = onPress ? Pressable : View;
-	return (
-		<Wrapper
-			onPress={onPress}
-			style={[
-				styles.listRow,
-				!last && { borderBottomWidth: 1, borderBottomColor: colors.hairline },
-			]}
-		>
+	const rowStyle = [
+		styles.listRow,
+		!last && { borderBottomWidth: 1, borderBottomColor: colors.hairline },
+	];
+	const body = (
+		<>
 			<View style={{ flex: 1, gap: 2 }}>
 				<T style={{ fontFamily: fonts.bodyMedium }}>{label}</T>
 				{detail ? <T variant="small">{detail}</T> : null}
 			</View>
 			{children}
-		</Wrapper>
+		</>
+	);
+	return onPress ? (
+		<Pressable
+			onPress={onPress}
+			style={({ pressed }) => [rowStyle, pressed && { opacity: 0.6 }]}
+		>
+			{body}
+		</Pressable>
+	) : (
+		<View style={rowStyle}>{body}</View>
 	);
 }
 
@@ -689,7 +776,10 @@ export function ActionSheet({
 				onPress={onClose}
 				accessibilityLabel="Close menu"
 			/>
-			<View style={[styles.sheet, { paddingBottom: insets.bottom + 12 }]}>
+			<Reanimated.View
+				entering={SHEET_IN}
+				style={[styles.sheet, { paddingBottom: insets.bottom + 12 }]}
+			>
 				{title ? (
 					<T
 						variant="label"
@@ -719,7 +809,7 @@ export function ActionSheet({
 						</Pressable>
 					);
 				})}
-			</View>
+			</Reanimated.View>
 		</Modal>
 	);
 }
@@ -752,7 +842,8 @@ export function Sheet({
 				accessibilityLabel="Close"
 			/>
 			{/* A Modal sits outside the activity's keyboard resizing, so lift the sheet by hand. */}
-			<View
+			<Reanimated.View
+				entering={SHEET_IN}
 				style={[
 					styles.sheet,
 					{
@@ -775,7 +866,7 @@ export function Sheet({
 				>
 					{children}
 				</ScrollView>
-			</View>
+			</Reanimated.View>
 		</Modal>
 	);
 }
@@ -842,15 +933,26 @@ export function Toast({
 export function PressableCard({
 	children,
 	style,
+	onPressIn,
+	onPressOut,
 	...rest
-}: PressableProps & { style?: StyleProp<ViewStyle> }) {
+}: Omit<PressableProps, "style"> & { style?: StyleProp<ViewStyle> }) {
+	const press = usePressScale(0.98);
 	return (
-		<Pressable
-			style={({ pressed }) => [styles.card, pressed && { opacity: 0.8 }, style]}
+		<AnimatedPressable
 			{...rest}
+			onPressIn={(e) => {
+				press.onPressIn();
+				onPressIn?.(e);
+			}}
+			onPressOut={(e) => {
+				press.onPressOut();
+				onPressOut?.(e);
+			}}
+			style={[styles.card, style, press.style]}
 		>
 			{children}
-		</Pressable>
+		</AnimatedPressable>
 	);
 }
 
@@ -898,6 +1000,14 @@ const styles = StyleSheet.create({
 		backgroundColor: colors.surface,
 		borderWidth: 1,
 		borderColor: colors.border,
+	},
+	segmentPill: {
+		position: "absolute",
+		top: 0,
+		bottom: 0,
+		left: 0,
+		borderRadius: 7,
+		backgroundColor: colors.control,
 	},
 	segment: {
 		minHeight: 32,

@@ -335,7 +335,11 @@ export default function SettingsScreen() {
 						label="Rest notification"
 					/>
 				</ListRow>
-				<ListRow label="Vibration" last>
+				<ListRow
+					label="Vibration"
+					detail="Logged sets, PRs, the rest timer and taps"
+					last
+				>
 					<Toggle
 						value={settings.vibrationEnabled}
 						onChange={(v) => store.updateSettings({ vibrationEnabled: v })}

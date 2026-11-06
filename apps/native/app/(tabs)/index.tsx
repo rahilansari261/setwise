@@ -27,6 +27,7 @@ import {
 	startOfWeek,
 	todayISO,
 } from "@/src/lib/dates";
+import { haptic } from "@/src/lib/haptics";
 import { dayStats, hasLogged, weekStreak } from "@/src/lib/stats";
 import { useExtras } from "@/src/state/extras";
 import { useT } from "@/src/state/i18n";
@@ -452,7 +453,6 @@ export default function Today() {
 								last={store.lastPerformance(we.exerciseId, date)}
 								unit={settings.unit}
 								autoRest={settings.autoRestTimer}
-								vibration={settings.vibrationEnabled}
 								supersetLabel={inGroup ? letter : undefined}
 								restAfterSet={tail}
 								canLinkNext={
@@ -499,6 +499,7 @@ export default function Today() {
 					onSave={(info) => {
 						store.finishWorkout(date, info);
 						setFinishOpen(false);
+						haptic.success();
 						toast("Workout saved");
 					}}
 				/>

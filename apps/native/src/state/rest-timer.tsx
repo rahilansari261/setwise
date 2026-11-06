@@ -1,4 +1,3 @@
-import * as Haptics from "expo-haptics";
 import {
 	createContext,
 	type ReactNode,
@@ -10,6 +9,7 @@ import {
 	useState,
 } from "react";
 
+import { haptic } from "@/src/lib/haptics";
 import { cancelRestDone, scheduleRestDone } from "@/src/lib/notifications";
 import { useWorkouts } from "@/src/state/workout-store";
 
@@ -45,13 +45,9 @@ function useRestTimerValue() {
 	useEffect(() => {
 		if (!running || remaining > 0 || firedFor.current === state.endsAt) return;
 		firedFor.current = state.endsAt;
-		if (settings.vibrationEnabled) {
-			Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
-				() => {},
-			);
-		}
+		haptic.success();
 		setState(IDLE);
-	}, [running, remaining, state.endsAt, settings.vibrationEnabled]);
+	}, [running, remaining, state.endsAt]);
 
 	const notify = useCallback(
 		(seconds: number, label?: string) => {

@@ -14,6 +14,7 @@ import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import { ExerciseProgress } from "@/src/components/exercise-progress";
 import { GroupBar } from "@/src/components/group-bar";
+import { FillBar } from "@/src/components/motion";
 import { Chip, ProBadge, Screen, T } from "@/src/components/ui";
 import { VTaperFigure } from "@/src/components/vtaper-figure";
 import { fmt } from "@/src/lib/calc";
@@ -146,13 +147,9 @@ export default function Progress() {
 							: "Add shoulders and waist to see your score"}
 					</T>
 					<View style={styles.vtTrack}>
-						<View
-							style={[
-								styles.vtFill,
-								{
-									width: `${Math.round(progressToIdeal(vt?.ratio ?? 0) * 100)}%`,
-								},
-							]}
+						<FillBar
+							fraction={progressToIdeal(vt?.ratio ?? 0)}
+							style={styles.vtFill}
 						/>
 					</View>
 				</View>

@@ -1,4 +1,3 @@
-import * as Haptics from "expo-haptics";
 import * as WebBrowser from "expo-web-browser";
 import { useRef, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
@@ -7,6 +6,7 @@ import Svg, { Path } from "react-native-svg";
 import { AdonisMark } from "@/src/components/adonis-mark";
 import { Button, Field, Screen, T } from "@/src/components/ui";
 import { ENV } from "@/src/env";
+import { haptic } from "@/src/lib/haptics";
 import { AuthError, secretLoginEnabled, useAuth } from "@/src/state/auth";
 import { colors, fonts } from "@/src/theme";
 
@@ -61,12 +61,10 @@ export default function SignIn() {
 		];
 		if (taps.current.length >= SECRET_TAPS) {
 			taps.current = [];
-			Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
-				() => {},
-			);
+			haptic.success();
 			enterAsGuest();
 		} else {
-			Haptics.selectionAsync().catch(() => {});
+			haptic.tick();
 		}
 	};
 

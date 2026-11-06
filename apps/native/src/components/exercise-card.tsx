@@ -1,4 +1,3 @@
-import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import {
 	ArrowDown,
@@ -16,7 +15,14 @@ import {
 } from "lucide-react-native";
 import { memo, useEffect, useState } from "react";
 import { Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
+import Animated, {
+	FadeIn,
+	FadeOut,
+	LayoutAnimationConfig,
+	LinearTransition,
+} from "react-native-reanimated";
 
+import { Pop } from "@/src/components/motion";
 import {
 	DumbbellSheet,
 	PlateSheet,
@@ -32,6 +38,7 @@ import {
 	parseSetTime,
 	warmupSets,
 } from "@/src/lib/calc";
+import { haptic } from "@/src/lib/haptics";
 import { countsAsWork, setTypeInfo } from "@/src/lib/sets";
 import { useT } from "@/src/state/i18n";
 import { useRestTimerActions } from "@/src/state/rest-timer";
@@ -92,7 +99,6 @@ export const ExerciseCard = memo(function ExerciseCard({
 	last,
 	unit,
 	autoRest,
-	vibration,
 	supersetLabel,
 	restAfterSet,
 	canLinkNext,
@@ -107,7 +113,6 @@ export const ExerciseCard = memo(function ExerciseCard({
 	last: LastPerformance | null;
 	unit: Unit;
 	autoRest: boolean;
-	vibration: boolean;
 	/** "A", "B"… when this exercise is part of a superset. */
 	supersetLabel?: string;
 	/** False for all but the last exercise of a superset: the rest comes after the round. */
@@ -142,14 +147,11 @@ export const ExerciseCard = memo(function ExerciseCard({
 	const onToggle = (set: WorkoutSet) => {
 		const result = store.toggleSet(date, we.id, set.id);
 		if (!result.completed) return;
-		if (vibration) {
-			Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-		}
 		if (result.isPR) {
-			Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
-				() => {},
-			);
+			haptic.success();
 			toast(`New PR · ${we.exerciseName}`);
+		} else {
+			haptic.confirm();
 		}
 		if (autoRest && restAfterSet) timer.start(undefined, we.exerciseName);
 	};
@@ -268,33 +270,36 @@ export const ExerciseCard = memo(function ExerciseCard({
 				</T>
 			</View>
 
-			{we.sets.map((set) => (
-				<SetRow
-					key={set.id}
-					set={set}
-					cols={cols}
-					onChange={(patch) => {
-						store.updateSet(date, we.id, set.id, patch);
-						// A weight typed into a set carries down to later unlogged sets that were empty or matched it,
-						// so typing "6" then "60" doesn't strand them at 6.
-						if (patch.weight !== undefined && patch.weight > 0) {
-							for (const later of we.sets.slice(set.setNumber)) {
-								if (
-									!later.completed &&
-									(!later.weight || later.weight === set.weight)
-								) {
-									store.updateSet(date, we.id, later.id, {
-										weight: patch.weight,
-									});
+			{/* Rows already there when the card appears don't animate; added and removed sets do. */}
+			<LayoutAnimationConfig skipEntering>
+				{we.sets.map((set) => (
+					<SetRow
+						key={set.id}
+						set={set}
+						cols={cols}
+						onChange={(patch) => {
+							store.updateSet(date, we.id, set.id, patch);
+							// A weight typed into a set carries down to later unlogged sets that were empty or matched it,
+							// so typing "6" then "60" doesn't strand them at 6.
+							if (patch.weight !== undefined && patch.weight > 0) {
+								for (const later of we.sets.slice(set.setNumber)) {
+									if (
+										!later.completed &&
+										(!later.weight || later.weight === set.weight)
+									) {
+										store.updateSet(date, we.id, later.id, {
+											weight: patch.weight,
+										});
+									}
 								}
 							}
-						}
-					}}
-					onToggle={() => onToggle(set)}
-					onOpen={() => setSheetSetId(set.id)}
-					onDelete={() => confirmDelete(set)}
-				/>
-			))}
+						}}
+						onToggle={() => onToggle(set)}
+						onOpen={() => setSheetSetId(set.id)}
+						onDelete={() => confirmDelete(set)}
+					/>
+				))}
+			</LayoutAnimationConfig>
 
 			{showNotes ? (
 				<TextInput
@@ -472,7 +477,12 @@ function SetRow({
 	const muted = !info.counts;
 	const e1rm = cols.showE1RM && !muted ? estimate1RM(set.weight, set.reps) : 0;
 	return (
-		<View style={[styles.grid, styles.row]}>
+		<Animated.View
+			entering={FadeIn.duration(200)}
+			exiting={FadeOut.duration(140)}
+			layout={LinearTransition.duration(200)}
+			style={[styles.grid, styles.row]}
+		>
 			<Pressable
 				accessibilityRole="button"
 				accessibilityLabel={`Set ${set.setNumber}, ${set.setType}. Tap to change type or effort, hold to delete.`}
@@ -544,7 +554,8 @@ function SetRow({
 				onPress={onToggle}
 				style={styles.colCheck}
 			>
-				<View
+				<Pop
+					on={set.completed}
 					style={[
 						styles.check,
 						set.completed ? styles.checkOn : styles.checkOff,
@@ -553,9 +564,9 @@ function SetRow({
 					{set.completed ? (
 						<Check size={15} color={colors.accentInk} strokeWidth={3} />
 					) : null}
-				</View>
+				</Pop>
 			</Pressable>
-		</View>
+		</Animated.View>
 	);
 }
 

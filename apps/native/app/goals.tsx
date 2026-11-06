@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Alert, Modal, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ExerciseList } from "@/src/components/exercise-list";
+import { FillBar } from "@/src/components/motion";
 import { ProScreen } from "@/src/components/pro-screen";
 import {
 	Button,
@@ -143,9 +144,9 @@ export default function Goals() {
 									marginTop: 10,
 								}}
 							>
-								<View
+								<FillBar
+									fraction={p.fraction}
 									style={{
-										width: `${Math.round(p.fraction * 100)}%`,
 										height: 8,
 										borderRadius: 4,
 										backgroundColor: colors.accent,

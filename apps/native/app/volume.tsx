@@ -1,6 +1,7 @@
 import { View } from "react-native";
 
 import { GroupBar } from "@/src/components/group-bar";
+import { FillBar } from "@/src/components/motion";
 import { Card, Screen, ScreenHeader, T } from "@/src/components/ui";
 import { plural } from "@/src/lib/calc";
 import { addDays, todayISO } from "@/src/lib/dates";
@@ -82,9 +83,9 @@ export default function Volume() {
 						backgroundColor: colors.hairline,
 					}}
 				>
-					<View
+					<FillBar
+						fraction={engine.minutes / CONDITIONING.goalMinutes}
 						style={{
-							width: `${Math.min(100, (engine.minutes / CONDITIONING.goalMinutes) * 100)}%`,
 							height: 8,
 							borderRadius: 4,
 							backgroundColor: engineOk ? colors.accent : colors.streak,

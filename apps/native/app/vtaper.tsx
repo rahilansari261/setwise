@@ -2,6 +2,7 @@ import { useState } from "react";
 import { View } from "react-native";
 
 import { LineChart } from "@/src/components/line-chart";
+import { FillBar } from "@/src/components/motion";
 import {
 	Button,
 	Card,
@@ -87,9 +88,9 @@ export default function VTaper() {
 						marginTop: 10,
 					}}
 				>
-					<View
+					<FillBar
+						fraction={progressToIdeal(ratio)}
 						style={{
-							width: `${Math.round(progressToIdeal(ratio) * 100)}%`,
 							height: 8,
 							borderRadius: 4,
 							backgroundColor: colors.accent,

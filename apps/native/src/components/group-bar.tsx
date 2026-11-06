@@ -1,5 +1,6 @@
 import { View } from "react-native";
 
+import { FillBar } from "@/src/components/motion";
 import { T } from "@/src/components/ui";
 import { statusOf, type VGroupInfo } from "@/src/lib/vmuscle";
 import { colors, fonts } from "@/src/theme";
@@ -52,9 +53,9 @@ export function GroupBar({
 						backgroundColor: colors.accentTint,
 					}}
 				/>
-				<View
+				<FillBar
+					fraction={sets / scaleMax}
 					style={{
-						width: pct(sets),
 						height: 10,
 						borderRadius: 5,
 						backgroundColor: STATUS_COLOR[status],
